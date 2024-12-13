@@ -21,7 +21,7 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
     const postsToCreate = ops.posts.creates
       .filter((create) => {
         // only alf-related posts
-        return create.record.text.toLowerCase().includes('alf')
+        return create.record.text.toLowerCase().includes('furry')
       })
       .map((create) => {
         // map alf-related posts to a db row
