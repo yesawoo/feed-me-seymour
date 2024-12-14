@@ -132,3 +132,9 @@ dist
 # intellij
 .idea/
 *.iml
+
+# SSL
+*.pem
+
+# Mac
+.DS_Store

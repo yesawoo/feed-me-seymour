@@ -18,6 +18,7 @@ const run = async () => {
         name: 'handle',
         message: 'Enter your Bluesky handle:',
         required: true,
+        default: 'buddyinu.bsky.social',
       },
       {
         type: 'password',
@@ -64,7 +65,7 @@ const run = async () => {
 
   // only update this if in a test environment
   const agent = new AtpAgent({ service: service ? service : 'https://bsky.social' })
-  await agent.login({ identifier: handle, password})
+  await agent.login({ identifier: handle, password })
 
   let avatarRef: BlobRef | undefined
   if (avatar) {
