@@ -14,7 +14,7 @@ services:
       - ${SSL_CERT_PATH:-./nginx/ssl/cert.pem}:/etc/nginx/ssl/cert.pem:ro
       - ${SSL_PRIVATE_KEY_PATH:-./nginx/ssl/privkey.pem}:/etc/nginx/ssl/privkey.pem:ro
     ports:
-      - '8000:80'
-      - '8001:443'
+      - '${HTTP_PORT:-8000}:80'
+      - '${HTTPS_PORT:-8001}:443'
     depends_on:
       - seymour
