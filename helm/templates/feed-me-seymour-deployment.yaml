@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -c
+    kompose.version: 1.35.0 (HEAD)
+  labels:
+    io.kompose.service: feed-me-seymour
+  name: feed-me-seymour
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: feed-me-seymour
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -c
+        kompose.version: 1.35.0 (HEAD)
+      labels:
+        io.kompose.service: feed-me-seymour
+    spec:
+      containers:
+        - image: registry.digitalocean.com/da-pawsitory/feed-me-seymour:latest
+          name: feed-me-seymour
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+      restartPolicy: Always

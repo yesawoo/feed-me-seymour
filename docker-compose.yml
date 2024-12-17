@@ -1,5 +1,5 @@
 services:
-  seymour:
+  feed-me-seymour:
     build:
       context: .
     ports:
@@ -16,4 +16,4 @@ services:
       - '${HTTP_PORT:-8000}:80'
       - '${HTTPS_PORT:-8001}:443'
     depends_on:
-      - seymour
+      - feed-me-seymour
