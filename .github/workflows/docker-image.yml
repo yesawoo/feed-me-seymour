@@ -22,10 +22,12 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
       - name: Build container image
+        run: docker build -t ${{ env.IMAGE_NAME }}:latest .
+
+      - name: Tag container image
         run: |
-          docker build -t ${{ env.IMAGE_NAME }}:latest .
           docker tag ${{ env.IMAGE_NAME }}:latest ${{ secrets.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:latest
-          docker tag ${{ env.IMAGE_NAME }}:latest ${{ secrets.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:$(echo $GITHUB_SHA | head -c7) .
+          docker tag ${{ env.IMAGE_NAME }}:latest ${{ secrets.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:$(echo $GITHUB_SHA | head -c7)
 
       - name: Log in to DigitalOcean Container Registry with short-lived credentials
         run: doctl registry login --expiry-seconds 1200
