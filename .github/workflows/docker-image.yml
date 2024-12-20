@@ -22,7 +22,7 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
       - name: Build container image
-        run: docker build -t ${{ env.IMAGE_NAME }}:latest .
+        run: docker build --platform=linux/amd64 -t ${{ env.IMAGE_NAME }}:latest .
 
       - name: Tag container image
         run: |
