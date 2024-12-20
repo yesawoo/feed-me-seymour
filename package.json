@@ -9,7 +9,7 @@
   "scripts": {
     "publishFeed": "ts-node scripts/publishFeedGen.ts",
     "unpublishFeed": "ts-node scripts/unpublishFeedGen.ts",
-    "start": "ts-node src/index.ts",
+    "start": "tsc && node dist/index.js",
     "build": "tsc"
   },
   "dependencies": {
@@ -25,7 +25,8 @@
     "express": "^4.18.2",
     "kysely": "^0.27.4",
     "morgan": "^1.10.0",
-    "multiformats": "^9.9.0"
+    "multiformats": "^9.9.0",
+    "zeromq": "^6.1.2"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.11",
