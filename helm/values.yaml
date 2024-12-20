@@ -1,0 +1,13 @@
+app:
+    name: "feed-me-seymour"
+    version: "1.0.0"
+
+image:
+    repository: "registry.digitalocean.com/da-pawsitory"
+    name: "feed-me-seymour"
+    tag: "bd61ec1"
+
+feedgen:
+    publisher_did: "did:plc:ziduwz64yj7sjsw45mckd2bg"
+    hostname: "furryhose.com"
+    listenhost: "0.0.0.0"

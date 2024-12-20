@@ -2,29 +2,44 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    kompose.cmd: kompose convert -c
-    kompose.version: 1.35.0 (HEAD)
   labels:
-    io.kompose.service: feed-me-seymour
+    app: feed-me-seymour
   name: feed-me-seymour
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: feed-me-seymour
+      app: feed-me-seymour
   template:
     metadata:
       annotations:
         kompose.cmd: kompose convert -c
         kompose.version: 1.35.0 (HEAD)
       labels:
-        io.kompose.service: feed-me-seymour
+        app: feed-me-seymour
     spec:
       containers:
-        - image: registry.digitalocean.com/da-pawsitory/feed-me-seymour:latest
-          name: feed-me-seymour
-          imagePullPolicy: IfNotPresent
+        - name: feed-me-seymour
+          image: {{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
           ports:
             - containerPort: 3000
               protocol: TCP
+          env:
+            - name: FEEDGEN_LISTENHOST
+              value: {{ .Values.feedgen.listenhost }}
+            - name: FEEDGEN_HOSTNAME
+              value: {{ .Values.feedgen.hostname }}
+            - name: FEEDGEN_PUBLISHER_DID
+              value: {{ .Values.feedgen.publisher_did }}
       restartPolicy: Always
+
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - traefik
+            topologyKey: "kubernetes.io/hostname"

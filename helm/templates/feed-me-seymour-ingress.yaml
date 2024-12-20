@@ -1,17 +1,51 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
 metadata:
-  name: feed-me-seymour-ingress
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
+  name: feed-me-seymour
 spec:
-  rules:
-    - http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: feed-me-seymour
-                port:
-                  number: 3000
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`furryhose.com`)
+      kind: Rule
+      services:
+        - name: feed-me-seymour
+          port: web
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: feed-me-seymour-tls
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    certResolver: letsencrypt
+  routes:
+    - match: Host(`furryhose.com`)
+      kind: Rule
+      services:
+        - name: feed-me-seymour
+          port: web
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: feed-me-seymour-ingress
+#   annotations:
+#     traefik.ingress.kubernetes.io/router.entrypoints: websecure,web
+#     traefik.ingress.kubernetes.io/router.tls: 'true'
+#     traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
+# spec:
+#   rules:
+#     - host: furryhose.com
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: feed-me-seymour
+#                 port:
+#                   number: 3000
