@@ -9,7 +9,12 @@ async function run() {
   console.log('Worker connected to port 5678')
 
   for await (const [msg] of sock) {
-    console.log('work: %s', msg.toString())
+    const event = JSON.parse(msg.toString())
+    if (event.record.langs?.includes('en')) {
+      console.log(event.record.text.trim())
+    } else {
+      console.log('Record does not contain English')
+    }
   }
 }
 
