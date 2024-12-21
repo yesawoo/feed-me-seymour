@@ -7,6 +7,8 @@ import { FirehoseSubscriptionBase, getOpsByType } from './util/subscription'
 import * as zmq from 'zeromq'
 
 export class FirehoseSubscription extends FirehoseSubscriptionBase {
+  private seq = 0
+
   constructor(
     public db: Database,
     public service: string,
@@ -25,37 +27,49 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
     // Delete before actually using
     for (const post of ops.posts.creates) {
       const event = wrapInEvent(post)
-      this.sock.send(JSON.stringify(event))
+      await this.sock
+        .send(JSON.stringify(event))
+        .then(() => {
+          this.seq++
+        })
+        .catch((err) => {
+          console.error('Error sending event to firehose', err)
+        })
+      this.seq++
+      if (this.seq % 1000 === 0) {
+        console.log('Sent', this.seq, 'events to firehose')
+      }
     }
 
-    const postsToDelete = ops.posts.deletes.map((del) => del.uri)
-    const postsToCreate = ops.posts.creates
-      .filter((create) => {
-        // only alf-related posts
-        return create.record.text.toLowerCase().includes('furry')
-      })
-      .map((create) => {
-        // map alf-related posts to a db row
-        return {
-          uri: create.uri,
-          cid: create.cid,
-          indexedAt: new Date().toISOString(),
-        }
-      })
+    return
+    // const postsToDelete = ops.posts.deletes.map((del) => del.uri)
+    // const postsToCreate = ops.posts.creates
+    //   .filter((create) => {
+    //     // only alf-related posts
+    //     return create.record.text.toLowerCase().includes('furry')
+    //   })
+    //   .map((create) => {
+    //     // map alf-related posts to a db row
+    //     return {
+    //       uri: create.uri,
+    //       cid: create.cid,
+    //       indexedAt: new Date().toISOString(),
+    //     }
+    //   })
 
-    if (postsToDelete.length > 0) {
-      await this.db
-        .deleteFrom('post')
-        .where('uri', 'in', postsToDelete)
-        .execute()
-    }
-    if (postsToCreate.length > 0) {
-      await this.db
-        .insertInto('post')
-        .values(postsToCreate)
-        .onConflict((oc) => oc.doNothing())
-        .execute()
-    }
+    // if (postsToDelete.length > 0) {
+    //   await this.db
+    //     .deleteFrom('post')
+    //     .where('uri', 'in', postsToDelete)
+    //     .execute()
+    // }
+    // if (postsToCreate.length > 0) {
+    //   await this.db
+    //     .insertInto('post')
+    //     .values(postsToCreate)
+    //     .onConflict((oc) => oc.doNothing())
+    //     .execute()
+    // }
   }
 }
 function wrapInEvent(post: {

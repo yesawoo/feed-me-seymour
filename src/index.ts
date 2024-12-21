@@ -21,7 +21,7 @@ const run = async () => {
       maybeInt(process.env.FEEDGEN_SUBSCRIPTION_RECONNECT_DELAY) ?? 3000,
     hostname,
     serviceDid,
-    zmqUri: maybeStr(process.env.ZMQ_URI) ?? 'tcp://127.0.0.1:5678',
+    zmqUri: maybeStr(process.env.ZMQ_URI) ?? 'inproc://firehose',
   }
   const sock = new zmq.Push()
   await sock.bind(config.zmqUri)
@@ -50,16 +50,18 @@ const maybeInt = (val?: string) => {
   return int
 }
 
-console.log('Starting workers.')
-const pool = workerpool.pool()
-pool.exec('src/workers/worker.ts', []).then((result) => {
+const startWorkers = () => {
+  console.log('Starting workers.')
+  let workerCount = 10
+  for (let i = 0; i < workerCount; i++) {
+    const worker = new Worker(`${__dirname}/workers/worker.js`, {
+      workerData: {},
+    })
+    worker.on('message', (result) => {
+      console.log(result)
+    })
+  }
+}
 
-const worker = new Worker(`${__dirname}/workers/worker.js`, {
-  workerData: {},
-})
-
-worker.on('message', (result) => {
-  console.log(result)
-})
-
+startWorkers()
 run()

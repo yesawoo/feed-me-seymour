@@ -8,7 +8,8 @@ console.log('Workers starting up')
 async function run() {
   const sock = new zmq.Pull()
 
-  sock.connect('tcp://127.0.0.1:5678')
+  // sock.connect('tcp://127.0.0.1:5678')
+  sock.connect('inproc://firehose')
   console.log('Worker connected to port 5678')
 
   const filterStack: (EventFilter | EventFilterHandler)[] = [
