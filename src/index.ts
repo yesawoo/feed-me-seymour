@@ -33,15 +33,6 @@ const run = async () => {
   })
   await server.start()
 
-  console.log('Starting workers.')
-  const worker = new Worker(`${__dirname}/workers/worker.js`, {
-    workerData: {},
-  })
-
-  worker.on('message', (result) => {
-    console.log(result)
-  })
-
   console.log(
     `🤖 running feed generator at http://${server.cfg.listenhost}:${server.cfg.port}`,
   )
@@ -58,5 +49,17 @@ const maybeInt = (val?: string) => {
   if (isNaN(int)) return undefined
   return int
 }
+
+console.log('Starting workers.')
+const pool = workerpool.pool()
+pool.exec('src/workers/worker.ts', []).then((result) => {
+
+const worker = new Worker(`${__dirname}/workers/worker.js`, {
+  workerData: {},
+})
+
+worker.on('message', (result) => {
+  console.log(result)
+})
 
 run()
