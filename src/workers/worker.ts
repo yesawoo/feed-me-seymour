@@ -9,7 +9,7 @@ export async function runFilter(config: Config) {
   const sock = new zmq.Pull()
 
   sock.connect(config.zmqUri)
-  console.log('Worker connected to ' + config.zmqUri)
+  console.log(`Worker[${process.pid}] connected to ${config.zmqUri}`)
 
   const filterStack: (EventFilter | EventFilterHandler)[] = [
     new LanguageFilter(['en', 'en-US', 'en-GB', 'en-CA', 'en-AU']),
@@ -34,5 +34,6 @@ export async function runFilter(config: Config) {
     } else {
       // console.log('.')
     }
+    process.stdout.write('w')
   }
 }

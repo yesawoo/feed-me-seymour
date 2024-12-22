@@ -18,6 +18,7 @@ export type Config = {
   serviceDid: string
   publisherDid: string
   subscriptionReconnectDelay: number
+  numWorkers: number
   zmqUri: string
 }
 
@@ -41,6 +42,7 @@ export const getConfig = (): Config => {
       maybeInt(process.env.FEEDGEN_SUBSCRIPTION_RECONNECT_DELAY) ?? 3000,
     hostname,
     serviceDid,
+    numWorkers: 2,
     zmqUri: maybeStr(process.env.ZMQ_URI) ?? 'tcp://127.0.0.1:5678',
   }
   return config

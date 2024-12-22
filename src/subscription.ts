@@ -1,3 +1,4 @@
+import { Mutex } from 'async-mutex'
 import { Database } from './db'
 import {
   OutputSchema as RepoEvent,
@@ -8,6 +9,7 @@ import * as zmq from 'zeromq'
 
 export class FirehoseSubscription extends FirehoseSubscriptionBase {
   private seq = 0
+  zmqMutex = new Mutex()
 
   constructor(
     public db: Database,
@@ -18,21 +20,29 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
   }
 
   async publishRecord(record) {
+    const event = wrapInEvent(record)
+
     let messageSent = false
-    let firstTry = true
+    let attempts = 0
+    const jsonEvent = JSON.stringify(event)
 
     while (!messageSent) {
-      const event = wrapInEvent(record)
-      await this.sock
-        .send(JSON.stringify(event))
+      const release = await this.zmqMutex.acquire()
+      this.sock
+        .send(jsonEvent)
         .then(() => {
           messageSent = true
-          this.seq++
-          if (!firstTry) console.log('Retried and succeeded')
+          if (attempts > 0) console.log('Retried and succeeded')
         })
         .catch((err) => {
+          attempts++
           console.error('Error sending event to firehose. Retrying...', err)
         })
+        .finally(() => {
+          release()
+        })
+
+      process.stdout.write('p')
     }
   }
 
@@ -44,6 +54,7 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
     for (const post of ops.posts.creates) {
       this.publishRecord(post)
 
+      this.seq++
       if (this.seq % 1000 === 0) {
         console.log('Sent', this.seq, 'events to firehose')
       }
@@ -80,6 +91,7 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
     // }
   }
 }
+
 function wrapInEvent(post: {
   uri: string
   cid: string

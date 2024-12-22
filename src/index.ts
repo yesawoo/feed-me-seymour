@@ -22,21 +22,32 @@ const runServer = async (config: Config) => {
   )
 }
 
-const main = async () => {
-  const config = getConfig()
-  if (process.argv[2] === 'child') {
-    console.log('Running child worker...')
-    runFilter(config)
-  } else {
-    const controller = new AbortController()
-    const { signal } = controller
-    console.log('Forking...')
-    const child = fork(__filename, ['child'], { signal })
+const runChildren = async (config: Config) => {
+  console.log('Running child worker...')
+  runFilter(config)
+}
+
+async function spawnWorkers(config: Config) {
+  console.log('Forking...')
+  const child = fork(__filename, ['child'])
+  for (let i = 0; i < config.numWorkers; i++) {
+    const child = fork(__filename, ['child'])
     child.on('error', (err) => {
       console.error('Failed to start worker.', err)
     })
+  }
+  child.on('error', (err) => {
+    console.error('Failed to start worker.', err)
+  })
+}
+
+const main = async () => {
+  const config = getConfig()
+  if (process.argv[2] === 'child') {
+    runChildren(config)
+  } else {
+    spawnWorkers(config)
     runServer(config)
-    // controller.abort() // Stops the child process
   }
 }
 
