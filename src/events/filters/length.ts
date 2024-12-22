@@ -1,4 +1,4 @@
-import Event from '../../events'
+import { Event } from '../../events'
 import { EventFilter } from './filter'
 
 class LengthFilter implements EventFilter {

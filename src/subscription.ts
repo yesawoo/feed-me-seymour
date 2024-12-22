@@ -20,17 +20,21 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
   }
 
   async publishRecord(record) {
-    const event = wrapInEvent(record, this.seq)
+    const event = wrapInEvent(record, this.seq++)
+
+    // console.log('Sending event to firehose', event)
 
     let messageSent = false
     let attempts = 0
     const jsonEvent = JSON.stringify(event)
 
+    let i = 0
     while (!messageSent) {
       const release = await this.zmqMutex.acquire()
-      this.sock
+      await this.sock
         .send(jsonEvent)
         .then(() => {
+          // console.log('Sent event to firehose', event)
           messageSent = true
           if (attempts > 0) console.log('Retried and succeeded')
         })
@@ -42,8 +46,6 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
           release()
         })
     }
-
-    this.seq++
   }
 
   async handleEvent(evt: RepoEvent) {

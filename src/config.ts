@@ -9,6 +9,10 @@ export type AppContext = {
   cfg: Config
 }
 
+interface UriDict {
+  [index: string]: string
+}
+
 export type Config = {
   port: number
   listenhost: string
@@ -19,7 +23,7 @@ export type Config = {
   publisherDid: string
   subscriptionReconnectDelay: number
   numWorkers: number
-  zmqUri: string
+  zmqUri: UriDict
 }
 
 export const getConfig = (): Config => {
@@ -43,7 +47,11 @@ export const getConfig = (): Config => {
     hostname,
     serviceDid,
     numWorkers: 2,
-    zmqUri: maybeStr(process.env.ZMQ_URI) ?? 'tcp://127.0.0.1:5678',
+    zmqUri: {
+      blueskyFirehose: maybeStr(process.env.ZMQ_URI) ?? 'tcp://127.0.0.1:23700',
+      filteredEvents: maybeStr(process.env.ZMQ_URI) ?? 'tcp://127.0.0.1:56320',
+      enrichedEvents: maybeStr(process.env.ZMQ_URI) ?? 'tcp://127.0.0.1:37592',
+    },
   }
   return config
 }

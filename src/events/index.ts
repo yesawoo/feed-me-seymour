@@ -1,9 +1,9 @@
 export type Label = {
   key: string
-  value: string | number | Date
+  value: string | number | Date | boolean
 }
 
-type Event = {
+export type Event = {
   id: string
   name: string
   labels: Label[]
@@ -11,4 +11,3 @@ type Event = {
   data: any
   _sequence: number
 }
-export default Event

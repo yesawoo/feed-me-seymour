@@ -1,4 +1,4 @@
-import Event from '../../events'
+import { Event } from '../../events'
 
 export type EventFilterHandler = (event: Event) => boolean
 

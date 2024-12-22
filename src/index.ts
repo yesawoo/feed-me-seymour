@@ -1,13 +1,14 @@
 import * as zmq from 'zeromq'
 import FeedGenerator from './server'
-import { Worker } from 'node:worker_threads'
 import { Config, getConfig } from './config'
-import { runFilter } from './workers/worker'
+import { runFilterWorker } from './workers/filterWorker'
 import { fork } from 'node:child_process'
+import { run } from 'node:test'
+import { runEnrichmentWorker } from './workers/enrichmentWorker'
 
 const runServer = async (config: Config) => {
   const sock = new zmq.Push()
-  await sock.bind(config.zmqUri)
+  await sock.bind(config.zmqUri['blueskyFirehose'])
 
   const server = FeedGenerator.create(config, sock)
 
@@ -23,19 +24,18 @@ const runServer = async (config: Config) => {
 }
 
 const runChildren = async (config: Config) => {
-  console.log('Running child worker...')
-  runFilter(config)
+  runFilterWorker(config)
 }
 
 async function spawnWorkers(config: Config) {
   console.log('Forking...')
-  const child = fork(__filename, ['child'])
   for (let i = 0; i < config.numWorkers; i++) {
     const child = fork(__filename, ['child'])
     child.on('error', (err) => {
       console.error('Failed to start worker.', err)
     })
   }
+  const child = fork(__filename, ['enrich'])
   child.on('error', (err) => {
     console.error('Failed to start worker.', err)
   })
@@ -45,7 +45,10 @@ const main = async () => {
   const config = getConfig()
   if (process.argv[2] === 'child') {
     runChildren(config)
+  } else if (process.argv[2] === 'enrich') {
+    runEnrichmentWorker(config)
   } else {
+    console.log('Starting server process...')
     spawnWorkers(config)
     runServer(config)
   }
