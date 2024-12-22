@@ -570,6 +570,11 @@
     "@types/qs" "*"
     "@types/serve-static" "*"
 
+"@types/hashtag-regex@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@types/hashtag-regex/-/hashtag-regex-2.0.3.tgz#bd5c2a63dc0c96754c6959be94856dc8d51c70ea"
+  integrity sha512-pDAioFewS/944eEY/UbZPgNZJWKGQyZ+DIBZSEQVEhTA1rif7GnFMUYj2nQIXv7hdgJ1VgjaI9S2WUZLLG7DYA==
+
 "@types/http-errors@*":
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/@types/http-errors/-/http-errors-2.0.4.tgz#7eb47726c391b7345a6ec35ad7f4de469cf5ba4f"
@@ -1380,6 +1385,11 @@ has-unicode@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/has-unicode/-/has-unicode-2.0.1.tgz#e0e6fe6a28cf51138855e086d1691e771de2a8b9"
   integrity sha512-8Rf9Y83NBReMnx0gFzA8JImQACstCYWUplepDa9xprwwtmgEZUF0h/i5xSA625zB/I37EtrswSST6OXxwaaIJQ==
+
+hashtag-regex@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/hashtag-regex/-/hashtag-regex-2.2.0.tgz#d083834279ce5c25917fbcbf6882a891b4a44009"
+  integrity sha512-9y6y4WgU40gdj8OXW5btOP14U/wPuGbd+0MLRJEkvvXayettkCHLiWKpHUp2IOCtefpCTkrHlYF8F1ZW/n/6tQ==
 
 hasown@^2.0.0, hasown@^2.0.2:
   version "2.0.2"
