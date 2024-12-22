@@ -3,14 +3,13 @@ import Event from '../events'
 import { LanguageFilter } from '../events/filters/language'
 import { LengthFilter } from '../events/filters/length'
 import { EventFilter, EventFilterHandler } from '../events/filters/filter'
-console.log('Workers starting up')
+import { Config } from '../config'
 
-async function run() {
+export async function runFilter(config: Config) {
   const sock = new zmq.Pull()
 
-  // sock.connect('tcp://127.0.0.1:5678')
-  sock.connect('inproc://firehose')
-  console.log('Worker connected to port 5678')
+  sock.connect(config.zmqUri)
+  console.log('Worker connected to ' + config.zmqUri)
 
   const filterStack: (EventFilter | EventFilterHandler)[] = [
     new LanguageFilter(['en', 'en-US', 'en-GB', 'en-CA', 'en-AU']),
@@ -37,5 +36,3 @@ async function run() {
     }
   }
 }
-
-run()

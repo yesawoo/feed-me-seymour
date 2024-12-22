@@ -17,25 +17,33 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
     super(db, service)
   }
 
+  async publishRecord(record) {
+    let messageSent = false
+    let firstTry = true
+
+    while (!messageSent) {
+      const event = wrapInEvent(record)
+      await this.sock
+        .send(JSON.stringify(event))
+        .then(() => {
+          messageSent = true
+          this.seq++
+          if (!firstTry) console.log('Retried and succeeded')
+        })
+        .catch((err) => {
+          console.error('Error sending event to firehose. Retrying...', err)
+        })
+    }
+  }
+
   async handleEvent(evt: RepoEvent) {
     if (!isCommit(evt)) return
 
     const ops = await getOpsByType(evt)
 
-    // This logs the text of every post off the firehose.
-    // Just for fun :)
-    // Delete before actually using
     for (const post of ops.posts.creates) {
-      const event = wrapInEvent(post)
-      await this.sock
-        .send(JSON.stringify(event))
-        .then(() => {
-          this.seq++
-        })
-        .catch((err) => {
-          console.error('Error sending event to firehose', err)
-        })
-      this.seq++
+      this.publishRecord(post)
+
       if (this.seq % 1000 === 0) {
         console.log('Sent', this.seq, 'events to firehose')
       }

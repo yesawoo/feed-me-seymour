@@ -1,36 +1,20 @@
 import * as zmq from 'zeromq'
-import dotenv from 'dotenv'
 import FeedGenerator from './server'
 import { Worker } from 'node:worker_threads'
+import { Config, getConfig } from './config'
+import { runFilter } from './workers/worker'
+import { fork } from 'node:child_process'
 
-const run = async () => {
-  dotenv.config()
-  const hostname = maybeStr(process.env.FEEDGEN_HOSTNAME) ?? 'example.com'
-  const serviceDid =
-    maybeStr(process.env.FEEDGEN_SERVICE_DID) ?? `did:web:${hostname}`
-  const config = {
-    port: maybeInt(process.env.FEEDGEN_PORT) ?? 3000,
-    listenhost: maybeStr(process.env.FEEDGEN_LISTENHOST) ?? 'localhost',
-    sqliteLocation: maybeStr(process.env.FEEDGEN_SQLITE_LOCATION) ?? ':memory:',
-    subscriptionEndpoint:
-      maybeStr(process.env.FEEDGEN_SUBSCRIPTION_ENDPOINT) ??
-      'wss://bsky.network',
-    publisherDid:
-      maybeStr(process.env.FEEDGEN_PUBLISHER_DID) ?? 'did:example:alice',
-    subscriptionReconnectDelay:
-      maybeInt(process.env.FEEDGEN_SUBSCRIPTION_RECONNECT_DELAY) ?? 3000,
-    hostname,
-    serviceDid,
-    zmqUri: maybeStr(process.env.ZMQ_URI) ?? 'inproc://firehose',
-  }
+const runServer = async (config: Config) => {
   const sock = new zmq.Push()
   await sock.bind(config.zmqUri)
-  console.log('Producer bound to port 5678')
 
   const server = FeedGenerator.create(config, sock)
+
   server.app.get('/', (req, res) => {
     res.send('Feed Me, Seymour!')
   })
+
   await server.start()
 
   console.log(
@@ -38,30 +22,22 @@ const run = async () => {
   )
 }
 
-const maybeStr = (val?: string) => {
-  if (!val) return undefined
-  return val
-}
-
-const maybeInt = (val?: string) => {
-  if (!val) return undefined
-  const int = parseInt(val, 10)
-  if (isNaN(int)) return undefined
-  return int
-}
-
-const startWorkers = () => {
-  console.log('Starting workers.')
-  let workerCount = 10
-  for (let i = 0; i < workerCount; i++) {
-    const worker = new Worker(`${__dirname}/workers/worker.js`, {
-      workerData: {},
+const main = async () => {
+  const config = getConfig()
+  if (process.argv[2] === 'child') {
+    console.log('Running child worker...')
+    runFilter(config)
+  } else {
+    const controller = new AbortController()
+    const { signal } = controller
+    console.log('Forking...')
+    const child = fork(__filename, ['child'], { signal })
+    child.on('error', (err) => {
+      console.error('Failed to start worker.', err)
     })
-    worker.on('message', (result) => {
-      console.log(result)
-    })
+    runServer(config)
+    // controller.abort() // Stops the child process
   }
 }
 
-startWorkers()
-run()
+main()
