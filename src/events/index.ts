@@ -9,5 +9,6 @@ type Event = {
   labels: Label[]
   timestamp: Date
   data: any
+  _sequence: number
 }
 export default Event

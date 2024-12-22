@@ -20,7 +20,7 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
   }
 
   async publishRecord(record) {
-    const event = wrapInEvent(record)
+    const event = wrapInEvent(record, this.seq)
 
     let messageSent = false
     let attempts = 0
@@ -41,9 +41,9 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
         .finally(() => {
           release()
         })
-
-      process.stdout.write('p')
     }
+
+    this.seq++
   }
 
   async handleEvent(evt: RepoEvent) {
@@ -54,7 +54,6 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
     for (const post of ops.posts.creates) {
       this.publishRecord(post)
 
-      this.seq++
       if (this.seq % 1000 === 0) {
         console.log('Sent', this.seq, 'events to firehose')
       }
@@ -92,12 +91,15 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
   }
 }
 
-function wrapInEvent(post: {
-  uri: string
-  cid: string
-  author: string
-  record: any
-}) {
+function wrapInEvent(
+  post: {
+    uri: string
+    cid: string
+    author: string
+    record: any
+  },
+  seq?: number,
+) {
   return {
     id: post.uri,
     name: 'socialmedia.bluesky.record.post_received',
@@ -107,5 +109,6 @@ function wrapInEvent(post: {
     ],
     timestamp: new Date(),
     data: post,
+    _sequence: seq || -1,
   }
 }

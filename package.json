@@ -27,6 +27,7 @@
     "kysely": "^0.27.4",
     "morgan": "^1.10.0",
     "multiformats": "^9.9.0",
+    "sentiment": "^5.0.2",
     "zeromq": "^6.1.2"
   },
   "devDependencies": {

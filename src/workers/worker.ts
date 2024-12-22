@@ -32,8 +32,6 @@ export async function runFilter(config: Config) {
     if (applyFilterStack(event)) {
       console.log(event.data.record.text.trim())
     } else {
-      // console.log('.')
     }
-    process.stdout.write('w')
   }
 }
