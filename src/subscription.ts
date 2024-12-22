@@ -20,7 +20,7 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
   }
 
   async publishRecord(record) {
-    const event = wrapInEvent(record, this.seq++)
+    const event = wrapInEnvelope(record, this.seq++)
 
     // console.log('Sending event to firehose', event)
 
@@ -62,38 +62,10 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
     }
 
     return
-    // const postsToDelete = ops.posts.deletes.map((del) => del.uri)
-    // const postsToCreate = ops.posts.creates
-    //   .filter((create) => {
-    //     // only alf-related posts
-    //     return create.record.text.toLowerCase().includes('furry')
-    //   })
-    //   .map((create) => {
-    //     // map alf-related posts to a db row
-    //     return {
-    //       uri: create.uri,
-    //       cid: create.cid,
-    //       indexedAt: new Date().toISOString(),
-    //     }
-    //   })
-
-    // if (postsToDelete.length > 0) {
-    //   await this.db
-    //     .deleteFrom('post')
-    //     .where('uri', 'in', postsToDelete)
-    //     .execute()
-    // }
-    // if (postsToCreate.length > 0) {
-    //   await this.db
-    //     .insertInto('post')
-    //     .values(postsToCreate)
-    //     .onConflict((oc) => oc.doNothing())
-    //     .execute()
-    // }
   }
 }
 
-function wrapInEvent(
+function wrapInEnvelope(
   post: {
     uri: string
     cid: string
@@ -112,5 +84,6 @@ function wrapInEvent(
     timestamp: new Date(),
     data: post,
     _sequence: seq || -1,
+    _schemaVersion: '0.0.1',
   }
 }

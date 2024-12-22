@@ -138,3 +138,8 @@ dist
 
 # Mac
 .DS_Store
+
+./notes.md
+*.db
+*.sqlite
+*.sqlite3

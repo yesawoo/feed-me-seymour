@@ -1,10 +1,10 @@
 import * as zmq from 'zeromq'
-import FeedGenerator from './server'
+import FeedGenerator from './workers/server'
 import { Config, getConfig } from './config'
 import { runFilterWorker } from './workers/filterWorker'
 import { fork } from 'node:child_process'
-import { run } from 'node:test'
 import { runEnrichmentWorker } from './workers/enrichmentWorker'
+import { runRouterWorker } from './workers/routerWorker'
 
 const runServer = async (config: Config) => {
   const sock = new zmq.Push()
@@ -23,34 +23,63 @@ const runServer = async (config: Config) => {
   )
 }
 
-const runChildren = async (config: Config) => {
-  runFilterWorker(config)
-}
-
 async function spawnWorkers(config: Config) {
-  console.log('Forking...')
-  for (let i = 0; i < config.numWorkers; i++) {
-    const child = fork(__filename, ['child'])
+  const spawnFilterWorkers = async () => {
+    for (let i = 0; i < config.numFilterWorkers; i++) {
+      const child = fork(__filename, ['filter'])
+      child.on('error', (err) => {
+        console.error('Failed to start worker.', err)
+      })
+    }
+  }
+
+  const spawnEnrichmentWorker = async () => {
+    const child = fork(__filename, ['enrich'])
     child.on('error', (err) => {
       console.error('Failed to start worker.', err)
     })
   }
-  const child = fork(__filename, ['enrich'])
-  child.on('error', (err) => {
-    console.error('Failed to start worker.', err)
-  })
+
+  const spawnRouterWorker = async () => {
+    const child = fork(__filename, ['router'])
+    child.on('error', (err) => {
+      console.error('Failed to start worker.', err)
+    })
+  }
+
+  const spawnServer = async () => {
+    const child = fork(__filename, ['server'])
+    child.on('error', (err) => {
+      console.error('Failed to start worker.', err)
+    })
+  }
+
+  spawnFilterWorkers()
+  spawnEnrichmentWorker()
+  spawnRouterWorker()
+  spawnServer()
 }
 
 const main = async () => {
   const config = getConfig()
-  if (process.argv[2] === 'child') {
-    runChildren(config)
-  } else if (process.argv[2] === 'enrich') {
-    runEnrichmentWorker(config)
-  } else {
-    console.log('Starting server process...')
-    spawnWorkers(config)
-    runServer(config)
+  switch (process.argv[2]) {
+    case 'filter':
+      runFilterWorker(config)
+      break
+    case 'enrich':
+      runEnrichmentWorker(config)
+      break
+    case 'router':
+      runRouterWorker(config)
+      break
+    case 'server':
+      console.log('Starting server process...')
+      runServer(config)
+      break
+    default:
+      console.log('Starting main process...')
+      spawnWorkers(config)
+      break
   }
 }
 

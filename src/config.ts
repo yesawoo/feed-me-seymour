@@ -22,7 +22,7 @@ export type Config = {
   serviceDid: string
   publisherDid: string
   subscriptionReconnectDelay: number
-  numWorkers: number
+  numFilterWorkers: number
   zmqUri: UriDict
 }
 
@@ -36,7 +36,8 @@ export const getConfig = (): Config => {
   const config = {
     port: maybeInt(process.env.FEEDGEN_PORT) ?? 3000,
     listenhost: maybeStr(process.env.FEEDGEN_LISTENHOST) ?? 'localhost',
-    sqliteLocation: maybeStr(process.env.FEEDGEN_SQLITE_LOCATION) ?? ':memory:',
+    sqliteLocation:
+      maybeStr(process.env.FEEDGEN_SQLITE_LOCATION) ?? './feeds.sqlite',
     subscriptionEndpoint:
       maybeStr(process.env.FEEDGEN_SUBSCRIPTION_ENDPOINT) ??
       'wss://bsky.network',
@@ -46,7 +47,7 @@ export const getConfig = (): Config => {
       maybeInt(process.env.FEEDGEN_SUBSCRIPTION_RECONNECT_DELAY) ?? 3000,
     hostname,
     serviceDid,
-    numWorkers: 2,
+    numFilterWorkers: 2,
     zmqUri: {
       blueskyFirehose: maybeStr(process.env.ZMQ_URI) ?? 'tcp://127.0.0.1:23700',
       filteredEvents: maybeStr(process.env.ZMQ_URI) ?? 'tcp://127.0.0.1:56320',
