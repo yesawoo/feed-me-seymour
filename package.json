@@ -10,7 +10,8 @@
   "scripts": {
     "publishFeed": "ts-node scripts/publishFeedGen.ts",
     "unpublishFeed": "ts-node scripts/unpublishFeedGen.ts",
-    "start": "tsc && ts-node src/index.ts",
+    "start": "ts-node src/index.ts",
+    "start-prod": "tsc && node dist/index.js",
     "build": "tsc"
   },
   "dependencies": {
