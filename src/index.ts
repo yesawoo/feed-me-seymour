@@ -13,7 +13,9 @@ const runServer = async (config: Config) => {
   const server = FeedGenerator.create(config, sock)
 
   server.app.get('/', (req, res) => {
-    res.send(`Feed Me, Seymour!\n${process.env.APP_VERSION || 'dev'}`)
+    res.send(
+      `<p>Feed Me, Seymour!</p><p>ver. ${process.env.APP_VERSION || 'dev'}</p>`,
+    )
   })
 
   await server.start()

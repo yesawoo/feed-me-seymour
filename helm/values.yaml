@@ -5,7 +5,7 @@ app:
 image:
     repository: "registry.digitalocean.com/da-pawsitory"
     name: "feed-me-seymour"
-    tag: "0f08cd9"
+    tag: "c2a02e9"
 
 feedgen:
     publisher_did: "did:plc:ziduwz64yj7sjsw45mckd2bg"
