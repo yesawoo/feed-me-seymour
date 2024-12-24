@@ -9,11 +9,6 @@ import hashtagRegex from 'hashtag-regex'
 import { createDb, Database, migrateToLatest } from '../db'
 import { addPostToFeed } from '../feeds/postRepository'
 
-const createDbConnection = (location: string): Database => {
-  console.log(`Connecting to DB: ${location}`)
-  return createDb(location)
-}
-
 export async function runRouterWorker(config: Config) {
   const sourceUri = config.zmqUri['enrichedEvents']
   const source = new zmq.Pull()
@@ -24,7 +19,7 @@ export async function runRouterWorker(config: Config) {
   // const sink = new zmq.Push()
   // await sink.connect(sinkUri)
 
-  const db = createDbConnection(config.sqliteLocation)
+  const db = createDb(config.dbType, config.dbConnectionString)
   migrateToLatest(db)
 
   console.log(

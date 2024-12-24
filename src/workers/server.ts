@@ -34,7 +34,7 @@ export class FeedGenerator {
   static create(cfg: Config, sock: zmq.Push) {
     const app = express()
     app.use(morgan('combined'))
-    const db = createDb(cfg.sqliteLocation)
+    const db = createDb(cfg.dbType, cfg.dbConnectionString)
     const firehose = new FirehoseSubscription(
       db,
       cfg.subscriptionEndpoint,

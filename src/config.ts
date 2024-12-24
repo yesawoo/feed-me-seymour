@@ -17,7 +17,8 @@ export type Config = {
   port: number
   listenhost: string
   hostname: string
-  sqliteLocation: string
+  dbType: string
+  dbConnectionString: string
   subscriptionEndpoint: string
   serviceDid: string
   publisherDid: string
@@ -36,8 +37,9 @@ export const getConfig = (): Config => {
   const config = {
     port: maybeInt(process.env.FEEDGEN_PORT) ?? 3000,
     listenhost: maybeStr(process.env.FEEDGEN_LISTENHOST) ?? 'localhost',
-    sqliteLocation:
-      maybeStr(process.env.FEEDGEN_SQLITE_LOCATION) ?? './feeds.sqlite',
+    dbType: maybeStr(process.env.FEEDGEN_DB_TYPE) ?? 'sqlite',
+    dbConnectionString:
+      maybeStr(process.env.FEEDGEN_DB_CONNECTION_STRING) ?? ':memory:',
     subscriptionEndpoint:
       maybeStr(process.env.FEEDGEN_SUBSCRIPTION_ENDPOINT) ??
       'wss://bsky.network',
