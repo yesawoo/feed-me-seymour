@@ -6,10 +6,15 @@ import {
 } from './lexicon/types/com/atproto/sync/subscribeRepos'
 import { FirehoseSubscriptionBase, getOpsByType } from './util/subscription'
 import * as zmq from 'zeromq'
+import { metrics } from '@opentelemetry/api'
 
 export class FirehoseSubscription extends FirehoseSubscriptionBase {
   private seq = 0
   zmqMutex = new Mutex()
+  private meter = metrics.getMeter('feed-me-seymour.bsky.firehose.subscription')
+  private publishCounter = this.meter.createCounter('events.sent.counter')
+  private publishErrorCounter = this.meter.createCounter('events.error.counter')
+  private receiptCounter = this.meter.createCounter('events.received.counter')
 
   constructor(
     public db: Database,
@@ -34,12 +39,13 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
       await this.sock
         .send(jsonEvent)
         .then(() => {
-          // console.log('Sent event to firehose', event)
           messageSent = true
+          this.publishCounter.add(1)
           if (attempts > 0) console.log('Retried and succeeded')
         })
         .catch((err) => {
           attempts++
+          this.publishErrorCounter.add(1)
           console.error('Error sending event to firehose. Retrying...', err)
         })
         .finally(() => {
@@ -49,6 +55,8 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
   }
 
   async handleEvent(evt: RepoEvent) {
+    this.receiptCounter.add(1)
+
     if (!isCommit(evt)) return
 
     const ops = await getOpsByType(evt)

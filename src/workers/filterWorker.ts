@@ -4,6 +4,7 @@ import { LanguageFilter } from '../events/filters/language'
 import { LengthFilter } from '../events/filters/length'
 import { EventFilter, EventFilterHandler } from '../events/filters/filter'
 import { Config } from '../config'
+import { metrics } from '@opentelemetry/api'
 
 export async function runFilterWorker(config: Config) {
   const sourceUri = config.zmqUri['blueskyFirehose']
@@ -30,17 +31,31 @@ export async function runFilterWorker(config: Config) {
     })
   }
 
+  const meter = metrics.getMeter('feed-me-seymour.filter')
+  const publishCounter = meter.createCounter('events.sent.counter')
+  const publishErrorCounter = meter.createCounter('events.error.counter')
+  const receiptCounter = meter.createCounter('events.received.counter')
+
   console.log(
     `FilterWorker[${process.pid}] ready. Source: ${sourceUri}, Sink: ${sinkUri}`,
   )
 
   for await (const [msg] of source) {
     const event = JSON.parse(msg.toString()) as Event
+    receiptCounter.add(1)
+
     if (applyFilterStack(event)) {
       console.log(event.data.record.text.trim())
-      await sink.send(JSON.stringify(event))
-    } else {
-      // console.log('Filtered out')
+
+      await sink
+        .send(JSON.stringify(event))
+        .then(() => {
+          publishCounter.add(1)
+        })
+        .catch((err) => {
+          publishErrorCounter.add(1)
+          console.error('Error publishing filtered event', err)
+        })
     }
   }
 }
