@@ -11,7 +11,7 @@ import { metrics } from '@opentelemetry/api'
 export class FirehoseSubscription extends FirehoseSubscriptionBase {
   private seq = 0
   zmqMutex = new Mutex()
-  private meter = metrics.getMeter('feed-me-seymour.bsky.firehose.subscription')
+  private meter = metrics.getMeter('feed-me-seymour.bsky.firehose.subscription', '0.0.1', { labels: })
   private publishCounter = this.meter.createCounter('events.sent.counter')
   private publishErrorCounter = this.meter.createCounter('events.error.counter')
   private receiptCounter = this.meter.createCounter('events.received.counter')
