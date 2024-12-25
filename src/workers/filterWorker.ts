@@ -38,7 +38,7 @@ export async function runFilterWorker(config: Config) {
   const publishErrorCounter = meter.createCounter('events.error.counter')
   const receiptCounter = meter.createCounter('events.received.counter')
 
-  console.log(
+  logger.info(
     `FilterWorker[${process.pid}] ready. Source: ${sourceUri}, Sink: ${sinkUri}`,
   )
 
@@ -47,7 +47,7 @@ export async function runFilterWorker(config: Config) {
     receiptCounter.add(1)
 
     if (applyFilterStack(event)) {
-      console.log(event.data.record.text.trim())
+      logger.debug({ 'Applying Filter Stack to': event })
 
       await sink
         .send(JSON.stringify(event))

@@ -8,6 +8,7 @@ import { FirehoseSubscriptionBase, getOpsByType } from './util/subscription'
 import * as zmq from 'zeromq'
 import { metrics } from '@opentelemetry/api'
 import { getLogger } from './util/logging'
+
 const logger = getLogger(__filename)
 
 export class FirehoseSubscription extends FirehoseSubscriptionBase {
@@ -68,7 +69,9 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
       this.publishRecord(post)
 
       if (this.seq % 1000 === 0) {
-        console.log('Sent', this.seq, 'events to firehose')
+        logger.info(`Sent ${this.seq} events to firehose`, {
+          log_type: 'heartbeat',
+        })
       }
     }
 
