@@ -1,5 +1,9 @@
 import { Database } from '../db'
 import { Event } from '../events'
+import { getLogger } from '../util/logging'
+
+const logger = getLogger(__filename)
+
 // const postsToDelete = ops.posts.deletes.map((del) => del.uri)
 // const postsToCreate = ops.posts.creates
 //   .filter((create) => {
@@ -25,12 +29,12 @@ export const addPostToFeed = async (db: Database, event: Event) => {
     cid: event.data.cid,
     indexedAt: new Date().toISOString(),
   }
-  console.log('Adding post to feed', postToCreate)
+  logger.info('Adding post to feed', postToCreate)
   await db
     .insertInto('post')
     .values(postToCreate)
     .onConflict((oc) => oc.doNothing())
     .execute()
-  console.log('Added post to feed', postToCreate.uri)
+  logger.info('Added post to feed', postToCreate.uri)
   return
 }

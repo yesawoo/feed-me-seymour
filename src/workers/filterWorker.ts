@@ -5,7 +5,9 @@ import { LengthFilter } from '../events/filters/length'
 import { EventFilter, EventFilterHandler } from '../events/filters/filter'
 import { Config } from '../config'
 import { metrics } from '@opentelemetry/api'
+import { getLogger } from '../util/logging'
 
+const logger = getLogger(__filename)
 export async function runFilterWorker(config: Config) {
   const sourceUri = config.zmqUri['blueskyFirehose']
   const source = new zmq.Pull()

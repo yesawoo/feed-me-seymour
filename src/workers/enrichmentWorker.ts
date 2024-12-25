@@ -7,6 +7,9 @@ import { Config } from '../config'
 import Sentiment from 'sentiment'
 import hashtagRegex from 'hashtag-regex'
 import uri from 'fast-uri'
+import { getLogger } from '../util/logging'
+
+const logger = getLogger(__filename)
 
 export async function runEnrichmentWorker(config: Config) {
   const sourceUri = config.zmqUri['filteredEvents']
@@ -17,7 +20,7 @@ export async function runEnrichmentWorker(config: Config) {
   const sink = new zmq.Push()
   await sink.bind(sinkUri)
 
-  console.log(
+  logger.info(
     `EnrichmentWorker[${process.pid}] ready. Source: ${sourceUri}, Sink: ${sinkUri}`,
   )
 
@@ -25,7 +28,7 @@ export async function runEnrichmentWorker(config: Config) {
     const event = JSON.parse(msg.toString()) as Event
     const enrichedEvent = enrich(event)
 
-    console.log('Enriched event', JSON.stringify(enrichedEvent))
+    logger.info('Enriched event', JSON.stringify(enrichedEvent))
     await sink.send(JSON.stringify(enrichedEvent))
   }
 }

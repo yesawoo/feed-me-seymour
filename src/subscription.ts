@@ -7,11 +7,16 @@ import {
 import { FirehoseSubscriptionBase, getOpsByType } from './util/subscription'
 import * as zmq from 'zeromq'
 import { metrics } from '@opentelemetry/api'
+import { getLogger } from './util/logging'
+const logger = getLogger(__filename)
 
 export class FirehoseSubscription extends FirehoseSubscriptionBase {
   private seq = 0
   zmqMutex = new Mutex()
-  private meter = metrics.getMeter('feed-me-seymour.bsky.firehose.subscription', '0.0.1', { labels: })
+  private meter = metrics.getMeter(
+    'feed-me-seymour.bsky.firehose.subscription',
+    '0.0.1',
+  )
   private publishCounter = this.meter.createCounter('events.sent.counter')
   private publishErrorCounter = this.meter.createCounter('events.error.counter')
   private receiptCounter = this.meter.createCounter('events.received.counter')
@@ -26,8 +31,6 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
 
   async publishRecord(record) {
     const event = wrapInEnvelope(record, this.seq++)
-
-    // console.log('Sending event to firehose', event)
 
     let messageSent = false
     let attempts = 0

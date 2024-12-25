@@ -5,6 +5,9 @@ import { runFilterWorker } from './workers/filterWorker'
 import { fork } from 'node:child_process'
 import { runEnrichmentWorker } from './workers/enrichmentWorker'
 import { runRouterWorker } from './workers/routerWorker'
+import { getLogger } from './util/logging'
+
+const logger = getLogger(__filename)
 
 const runServer = async (config: Config) => {
   const sock = new zmq.Push()
@@ -20,7 +23,7 @@ const runServer = async (config: Config) => {
 
   await server.start()
 
-  console.log(
+  logger.info(
     `🤖 running feed generator at http://${server.cfg.listenhost}:${server.cfg.port}`,
   )
 }
@@ -75,11 +78,11 @@ const main = async () => {
       runRouterWorker(config)
       break
     case 'server':
-      console.log('Starting server process...')
+      logger.info('Starting server process...')
       runServer(config)
       break
     default:
-      console.log('Starting main process...')
+      logger.info('Starting main process...')
       spawnWorkers(config)
       break
   }

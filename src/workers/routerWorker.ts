@@ -8,6 +8,9 @@ import Sentiment from 'sentiment'
 import hashtagRegex from 'hashtag-regex'
 import { createDb, Database, migrateToLatest } from '../db'
 import { addPostToFeed } from '../feeds/postRepository'
+import { getLogger } from '../util/logging'
+
+const logger = getLogger(__filename)
 
 export async function runRouterWorker(config: Config) {
   const sourceUri = config.zmqUri['enrichedEvents']
@@ -22,7 +25,7 @@ export async function runRouterWorker(config: Config) {
   const db = createDb(config.dbType, config.dbConnectionString)
   migrateToLatest(db)
 
-  console.log(
+  logger.info(
     `RouterWorker[${process.pid}] ready. Source: ${sourceUri}, Sink: ${sinkUri}`,
   )
 
@@ -30,7 +33,7 @@ export async function runRouterWorker(config: Config) {
 
   const routeHandlers: ((Event) => void)[] = [
     (event: Event) => {
-      console.log('Routing Event', event)
+      logger.info('Routing Event', event)
     },
     // webhookRouter.handleEvent.bind(webhookRouter),
     (event: Event) => {
@@ -39,7 +42,7 @@ export async function runRouterWorker(config: Config) {
           (label) => label.key === 'isFurryTrash' && label.value === true,
         )
       ) {
-        console.log('Furry Trash Detected! Adding it to the feed.')
+        logger.info('Furry Trash Detected! Adding it to the feed.')
         addPostToFeed(db, event)
       }
     },
@@ -62,7 +65,7 @@ class WebhookRouter {
 
   async handleEvent(event: Event): Promise<void> {
     if (this.matchesRoutingRules(event)) {
-      console.log('Routing event to webhook')
+      logger.info('Routing event to webhook')
       this.pushEvent(event)
     }
   }

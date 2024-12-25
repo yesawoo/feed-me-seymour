@@ -4,14 +4,17 @@ import { AppContext } from '../config'
 import algos from '../algos'
 import { validateAuth } from '../auth'
 import { AtUri } from '@atproto/syntax'
+import { getLogger } from '../util/logging'
+
+const logger = getLogger(__filename)
 
 export default function (server: Server, ctx: AppContext) {
   server.app.bsky.feed.getFeedSkeleton(async ({ params, req }) => {
     const feedUri = new AtUri(params.feed)
     const algo = algos[feedUri.rkey]
-    console.log('feedUri.hostname', feedUri.hostname)
-    console.log('feedUri.collection', feedUri.collection)
-    console.log(ctx.cfg)
+    logger.info('feedUri.hostname', feedUri.hostname)
+    logger.info('feedUri.collection', feedUri.collection)
+    logger.info(ctx.cfg)
     if (
       feedUri.hostname !== ctx.cfg.publisherDid ||
       feedUri.collection !== 'app.bsky.feed.generator' ||

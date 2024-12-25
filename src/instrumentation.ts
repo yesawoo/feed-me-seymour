@@ -3,12 +3,15 @@ import dotenv from 'dotenv'
 import { NodeSDK } from '@opentelemetry/sdk-node'
 import { ConsoleSpanExporter } from '@opentelemetry/sdk-trace-node'
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
-import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto'
 import {
   PeriodicExportingMetricReader,
   ConsoleMetricExporter,
 } from '@opentelemetry/sdk-metrics'
+import { getLogger } from './util/logging'
+
+const logger = getLogger(__filename)
 
 dotenv.config()
 
@@ -30,6 +33,6 @@ const sdk = new NodeSDK({
   instrumentations: [getNodeAutoInstrumentations()],
 })
 
-console.log("Process Environment: ", process.env)
+logger.info('Process Environment: ', process.env)
 
 sdk.start()
