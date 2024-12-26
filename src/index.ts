@@ -1,3 +1,4 @@
+import { metrics } from '@opentelemetry/api'
 import * as zmq from 'zeromq'
 import FeedGenerator from './workers/server'
 import { Config, getConfig } from './config'
@@ -19,6 +20,18 @@ const runServer = async (config: Config) => {
     res.send(
       `<p>Feed Me, Seymour!</p><p>ver. ${process.env.APP_VERSION || 'dev'}</p>`,
     )
+  })
+
+  server.app.get('/system/info', (req, res) => {
+    const sortedEnv = Object.entries(process.env).sort(([keyA], [keyB]) =>
+      keyA.localeCompare(keyB),
+    ) // Sort keys alphabetically
+
+    res.send(`<pre>${JSON.stringify(sortedEnv, undefined, 2)}</pre>`),
+      {
+        status: 'ok',
+        version: process.env.APP_VERSION || 'dev',
+      }
   })
 
   await server.start()

@@ -33,6 +33,4 @@ const sdk = new NodeSDK({
   instrumentations: [getNodeAutoInstrumentations()],
 })
 
-logger.info('Process Environment: ', process.env)
-
 sdk.start()
