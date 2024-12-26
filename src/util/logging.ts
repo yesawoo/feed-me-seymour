@@ -16,7 +16,7 @@ export const logger = pino(
 export const rootLogger = logger
 
 export function getLogger(name: string) {
-  return logger.child({ name: name })
+  return logger.child({ filename: name })
 }
 
 function disableConsoleLogging() {

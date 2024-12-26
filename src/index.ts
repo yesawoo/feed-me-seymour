@@ -20,6 +20,10 @@ const runServer = async (config: Config) => {
     res.send('<p>Feed Me, Seymour!</p>')
   })
 
+  server.app.get(['/health', '/system/health'], (req, res) => {
+    res.status(200).send('OK')
+  })
+
   server.app.get('/system/version', (req, res) => {
     res.send(process.env.APP_VERSION || 'dev')
   })
