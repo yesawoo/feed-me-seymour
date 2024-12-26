@@ -22,6 +22,10 @@ const runServer = async (config: Config) => {
     )
   })
 
+  server.app.get('/system/version', (req, res) => {
+    res.send(process.env.APP_VERSION || 'dev')
+  })
+
   server.app.get('/system/info', (req, res) => {
     const sortedEnv = Object.entries(process.env).sort(([keyA], [keyB]) =>
       keyA.localeCompare(keyB),
