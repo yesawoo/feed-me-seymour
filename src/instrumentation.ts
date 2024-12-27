@@ -22,27 +22,35 @@ const config = {
     'http://localhost:4318/v1/metrics',
 }
 
-// const sdk = new NodeSDK({
-//   // traceExporter: new ConsoleSpanExporter(),
-//   metricReader: new PeriodicExportingMetricReader({
-//     exporter: new ConsoleMetricExporter({}),
-//     exportIntervalMillis: 10000,
-//   }),
-//   instrumentations: [getNodeAutoInstrumentations()],
-// })
+const getSDK = () => {
+  const sdkType = process.env.OTEL_EXPORT_TO_CONSOLE ? 'console' : 'otlp'
 
+  if (sdkType === 'console') {
+    return new NodeSDK({
+      traceExporter: new ConsoleSpanExporter(),
+      metricReader: new PeriodicExportingMetricReader({
+        exporter: new ConsoleMetricExporter({}),
+        exportIntervalMillis: 10000,
+      }),
+      instrumentations: [getNodeAutoInstrumentations()],
+    })
+  }
+
+  const sdk = new NodeSDK({
+    traceExporter: new OTLPTraceExporter(),
+
+    metricReader: new PeriodicExportingMetricReader({
+      exporter: new OTLPMetricExporter({ url: config.metricsEndpoint }),
+    }),
+    instrumentations: [getNodeAutoInstrumentations()],
+  })
+
+  return sdk
+}
+
+const sdk = getSDK()
 logger.info(
   'Starting OpenTelemetry SDK - Metrics Endpoint: %s',
   config.metricsEndpoint,
 )
-
-const sdk = new NodeSDK({
-  traceExporter: new OTLPTraceExporter(),
-
-  metricReader: new PeriodicExportingMetricReader({
-    exporter: new OTLPMetricExporter({ url: config.metricsEndpoint }),
-  }),
-  instrumentations: [getNodeAutoInstrumentations()],
-})
-
 sdk.start()
