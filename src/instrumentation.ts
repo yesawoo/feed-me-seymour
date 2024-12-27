@@ -52,4 +52,5 @@ logger.info(
   'Starting OpenTelemetry SDK - Metrics Endpoint: %s',
   config.metricsEndpoint,
 )
+console.log(`FUCK: ${config}`)
 sdk.start()
