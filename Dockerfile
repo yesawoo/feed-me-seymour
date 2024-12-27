@@ -1,4 +1,6 @@
-# Use the official Node.js image as the base image
+# This app depends on ZeroMQ which is kind of tricky to build sometimes. 
+# This creates a base image with all the stuff needed to build ZeroMQ and then
+# deletes the apt cache goop.
 FROM node:23-bookworm-slim AS fms-base
 
 WORKDIR /usr/src/app
@@ -21,6 +23,8 @@ RUN apt-get update \
 	&& rm -rf /var/cache/apt/archives /var/lib/apt/lists
 ENV VCPKG_FORCE_SYSTEM_BINARIES=
 
+# Uncomment this to debug zeromq build failures without having to wait for all 
+# the app stuff.
 # RUN yarn add zeromq
 
 FROM fms-base

@@ -21,6 +21,7 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
   private publishCounter = this.meter.createCounter('events.sent.counter')
   private publishErrorCounter = this.meter.createCounter('events.error.counter')
   private receiptCounter = this.meter.createCounter('events.received.counter')
+  private bonerGauge = this.meter.createGauge('boner.gauge')
 
   constructor(
     public db: Database,
@@ -72,6 +73,7 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
         logger.info(`Sent ${this.seq} events to firehose`, {
           log_type: 'heartbeat',
         })
+        this.bonerGauge.record(this.seq)
       }
     }
 
