@@ -15,6 +15,13 @@ const logger = getLogger(__filename)
 
 dotenv.config()
 
+const config = {
+  metricsEndpoint:
+    process.env.OTEL_METRICS_EXPORTER_OTLP_ENDPOINT ||
+    process.env.METRICS_ENDPOINT ||
+    'http://localhost:4318/v1/metrics',
+}
+
 // const sdk = new NodeSDK({
 //   // traceExporter: new ConsoleSpanExporter(),
 //   metricReader: new PeriodicExportingMetricReader({
@@ -24,11 +31,16 @@ dotenv.config()
 //   instrumentations: [getNodeAutoInstrumentations()],
 // })
 
+logger.info(
+  'Starting OpenTelemetry SDK - Metrics Endpoint: %s',
+  config.metricsEndpoint,
+)
+
 const sdk = new NodeSDK({
   traceExporter: new OTLPTraceExporter(),
 
   metricReader: new PeriodicExportingMetricReader({
-    exporter: new OTLPMetricExporter({ url: 'http://snoutstack-alloy:4318' }),
+    exporter: new OTLPMetricExporter({ url: config.metricsEndpoint }),
   }),
   instrumentations: [getNodeAutoInstrumentations()],
 })
