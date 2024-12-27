@@ -8,6 +8,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
+    "testInstrumentation": "ts-node scripts/testInstrumentation.ts",
     "publishFeed": "ts-node scripts/publishFeedGen.ts",
     "unpublishFeed": "ts-node scripts/unpublishFeedGen.ts",
     "start": "ts-node --require ./src/instrumentation.ts ./src/index.ts",
