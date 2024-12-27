@@ -17,7 +17,7 @@ dotenv.config()
 
 const config = {
   metricsEndpoint:
-    process.env.OTEL_METRICS_EXPORTER_OTLP_ENDPOINT ||
+    process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT ||
     'http://localhost:4318/v1/metrics',
 }
 
