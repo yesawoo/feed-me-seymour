@@ -28,7 +28,7 @@ const sdk = new NodeSDK({
   traceExporter: new OTLPTraceExporter(),
 
   metricReader: new PeriodicExportingMetricReader({
-    exporter: new OTLPMetricExporter(),
+    exporter: new OTLPMetricExporter({ url: 'http://snoutstack-alloy:4318' }),
   }),
   instrumentations: [getNodeAutoInstrumentations()],
 })
