@@ -9,9 +9,6 @@ import {
   PeriodicExportingMetricReader,
   ConsoleMetricExporter,
 } from '@opentelemetry/sdk-metrics'
-import { getLogger } from './util/logging'
-
-const logger = getLogger(__filename)
 
 dotenv.config()
 
@@ -22,9 +19,7 @@ const config = {
 }
 
 const getSDK = () => {
-  const sdkType = process.env.OTEL_EXPORT_TO_CONSOLE ? 'console' : 'otlp'
-
-  if (sdkType === 'console') {
+  if (config.metricsEndpoint === ':console:') {
     return new NodeSDK({
       traceExporter: new ConsoleSpanExporter(),
       metricReader: new PeriodicExportingMetricReader({
@@ -48,9 +43,6 @@ const getSDK = () => {
 }
 
 const sdk = getSDK()
-logger.info(
-  'Starting OpenTelemetry SDK - Metrics Endpoint: %s',
-  config.metricsEndpoint,
-)
-console.log(`FUCK: ${config}`)
+
+console.log(`Starting SDK with Metrics Endpoint: ${config.metricsEndpoint}`)
 sdk.start()

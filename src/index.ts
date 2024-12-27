@@ -47,35 +47,39 @@ const runServer = async (config: Config) => {
   )
 }
 
+const borkfork = async (workerName: string) => {
+  console.log('Forking it up: ', workerName)
+  const child = fork(__filename, [workerName], {
+    execArgv: ['-r', 'ts-node/register', '-r', './src/instrumentation.ts'],
+  })
+
+  child.on('error', (err) => {
+    console.error('Failed to start worker.', err)
+  })
+  return child
+}
+
 async function spawnWorkers(config: Config) {
   const spawnFilterWorkers = async () => {
     for (let i = 0; i < config.numFilterWorkers; i++) {
-      const child = fork(__filename, ['filter'])
-      child.on('error', (err) => {
-        console.error('Failed to start worker.', err)
-      })
+      console.log(`Spawning filter worker ${i}/${config.numFilterWorkers}`)
+      const child = borkfork('filter')
     }
   }
 
   const spawnEnrichmentWorker = async () => {
-    const child = fork(__filename, ['enrich'])
-    child.on('error', (err) => {
-      console.error('Failed to start worker.', err)
-    })
+    console.log('Spawning enrichment worker')
+    const child = borkfork('enrich')
   }
 
   const spawnRouterWorker = async () => {
-    const child = fork(__filename, ['router'])
-    child.on('error', (err) => {
-      console.error('Failed to start worker.', err)
-    })
+    console.log('Spawning router worker')
+    const child = borkfork('router')
   }
 
   const spawnServer = async () => {
-    const child = fork(__filename, ['server'])
-    child.on('error', (err) => {
-      console.error('Failed to start worker.', err)
-    })
+    console.log('Spawning server worker')
+    const child = borkfork('server')
   }
 
   spawnFilterWorkers()
