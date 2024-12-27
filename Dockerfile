@@ -17,6 +17,7 @@ RUN apt-get update \
 	zip \
 	unzip \
 	tar \
+	vim-tiny \
 	&& rm -rf /var/cache/apt/archives /var/lib/apt/lists
 ENV VCPKG_FORCE_SYSTEM_BINARIES=
 
