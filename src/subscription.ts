@@ -38,10 +38,6 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
     let attempts = 0
     const jsonEvent = JSON.stringify(event)
 
-    if (Math.random() < 0.01) {
-      logger.info(`Random Event Sample: ${jsonEvent}`)
-    }
-
     let i = 0
     while (!messageSent) {
       const release = await this.zmqMutex.acquire()

@@ -12,11 +12,21 @@ import {
   isCommit,
 } from '../lexicon/types/com/atproto/sync/subscribeRepos'
 import { Database } from '../db'
+import { metrics } from '@opentelemetry/api'
 
 export abstract class FirehoseSubscriptionBase {
   public sub: Subscription<RepoEvent>
+  approxQueueDepthMeter: any
 
   constructor(public db: Database, public service: string) {
+    const queueMeter = metrics.getMeter(
+      'feed-me-seymour.bsky.firehose.subscription',
+      '0.0.1',
+    )
+    this.approxQueueDepthMeter = queueMeter.createUpDownCounter(
+      'zmq.firehose.sink.depth',
+    )
+
     this.sub = new Subscription({
       service: service,
       method: ids.ComAtprotoSyncSubscribeRepos,
@@ -39,9 +49,12 @@ export abstract class FirehoseSubscriptionBase {
   async run(subscriptionReconnectDelay: number) {
     try {
       for await (const evt of this.sub) {
-        this.handleEvent(evt).catch((err) => {
-          console.error('repo subscription could not handle message', err)
-        })
+        this.approxQueueDepthMeter.add(1)
+        this.handleEvent(evt)
+          .catch((err) => {
+            console.error('repo subscription could not handle message', err)
+          })
+          .finally(this.approxQueueDepthMeter.add(-1))
         // update stored cursor every 20 events or so
         if (isCommit(evt) && evt.seq % 20 === 0) {
           await this.updateCursor(BigInt(evt.seq))
