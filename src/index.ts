@@ -121,11 +121,15 @@ const main = async () => {
     case 'firehose':
       runServer(config, true)
       break
-    case 'server':
+    case 'webserver':
       runServer(config, false)
       break
     default:
-      spawnWorkers(config)
+      if (process.env.ENVIRONMENT === 'development') {
+        spawnWorkers(config)
+      } else {
+        throw new Error('Unknown worker type')
+      }
       break
   }
 }
