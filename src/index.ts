@@ -48,12 +48,15 @@ const runServer = async (
 
   await server.start(connectToFirehose)
 
-  logger.info(
-    `🤖 running feed generator at http://${server.cfg.listenhost}:${server.cfg.port}`,
-  )
-  logger.info(
-    `Bluesky Firehose Source [${process.pid}] ready. Source: Bluesky, Sink: ${sinkUri}`,
-  )
+  if (connectToFirehose) {
+    logger.info(
+      `Bluesky Firehose Source [${process.pid}] ready. Source: Bluesky, Sink: ${sinkUri}`,
+    )
+  } else {
+    logger.info(
+      `🤖 running feed generator at http://${server.cfg.listenhost}:${server.cfg.port}`,
+    )
+  }
 }
 
 const borkfork = async (workerName: string) => {

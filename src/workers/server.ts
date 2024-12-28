@@ -11,6 +11,9 @@ import describeGenerator from '../methods/describe-generator'
 import feedGeneration from '../methods/feed-generation'
 import { FirehoseSubscription } from '../subscription'
 import wellKnown from '../well-known'
+import { getLogger } from '../util/logging'
+
+const logger = getLogger(__filename)
 
 export class FeedGenerator {
   public app: express.Application
