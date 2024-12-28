@@ -57,8 +57,7 @@ export async function runFilterWorker(config: Config) {
     }
 
     logger.trace(`Applying Filter Stack to[${numFiltered}]: ${event.id}`)
-    if (true) {
-      //applyFilterStack(event)) {
+    if (applyFilterStack(event)) {
       logger.info(`Event accepted[${numFiltered}]: ${event.id}`)
       await sink
         .send(JSON.stringify(event))
