@@ -68,11 +68,15 @@ export class FeedGenerator {
     return new FeedGenerator(app, db, firehose, cfg)
   }
 
-  async start(): Promise<http.Server> {
+  async start(connectToFirehose: boolean = true): Promise<http.Server> {
     await migrateToLatest(this.db)
-    this.firehose.run(this.cfg.subscriptionReconnectDelay)
-    this.server = this.app.listen(this.cfg.port, this.cfg.listenhost)
-    await events.once(this.server, 'listening')
+    if (connectToFirehose) {
+      this.firehose.run(this.cfg.subscriptionReconnectDelay)
+      this.server = this.app.listen(8080, '127.0.0.1') // janky hack to disable server on the firehose component.
+    } else {
+      this.server = this.app.listen(this.cfg.port, this.cfg.listenhost)
+      await events.once(this.server, 'listening')
+    }
     return this.server
   }
 }

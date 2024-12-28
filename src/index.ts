@@ -8,10 +8,14 @@ import { runEnrichmentWorker } from './workers/enrichmentWorker'
 import { runRouterWorker } from './workers/routerWorker'
 import { getLogger } from './util/logging'
 import { getQueueUri } from './util/zeromq'
+import { connect } from 'node:http2'
 
 const logger = getLogger(__filename)
 
-const runServer = async (config: Config) => {
+const runServer = async (
+  config: Config,
+  connectToFirehose: boolean = false,
+) => {
   const sock = new zmq.Push()
   const sinkUri = getQueueUri(config.bindHost, config.firehosePort)
   await sock.bind(sinkUri)
@@ -42,7 +46,7 @@ const runServer = async (config: Config) => {
       }
   })
 
-  await server.start()
+  await server.start(connectToFirehose)
 
   logger.info(
     `🤖 running feed generator at http://${server.cfg.listenhost}:${server.cfg.port}`,
@@ -82,6 +86,11 @@ async function spawnWorkers(config: Config) {
     const child = borkfork('router')
   }
 
+  const spawnFirehose = async () => {
+    console.log('Spawning server worker')
+    const child = borkfork('firehose')
+  }
+
   const spawnServer = async () => {
     console.log('Spawning server worker')
     const child = borkfork('server')
@@ -90,6 +99,7 @@ async function spawnWorkers(config: Config) {
   spawnFilterWorkers()
   spawnEnrichmentWorker()
   spawnRouterWorker()
+  spawnFirehose()
   spawnServer()
 }
 
@@ -105,12 +115,13 @@ const main = async () => {
     case 'router':
       runRouterWorker(config)
       break
+    case 'firehose':
+      runServer(config, true)
+      break
     case 'server':
-      logger.info('Starting server process...')
-      runServer(config)
+      runServer(config, false)
       break
     default:
-      logger.info('Starting main process...')
       spawnWorkers(config)
       break
   }
