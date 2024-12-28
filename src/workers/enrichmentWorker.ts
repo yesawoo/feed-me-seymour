@@ -8,16 +8,17 @@ import Sentiment from 'sentiment'
 import hashtagRegex from 'hashtag-regex'
 import uri from 'fast-uri'
 import { getLogger } from '../util/logging'
+import { getQueueUri } from '../util/zeromq'
 
 const logger = getLogger(__filename)
 
 export async function runEnrichmentWorker(config: Config) {
-  const sourceUri = config.zmqUri['filteredEvents']
   const source = new zmq.Pull()
+  const sourceUri = getQueueUri(config.bindHost, config.enrichPort)
   await source.bind(sourceUri)
 
-  const sinkUri = config.zmqUri['enrichedEvents']
   const sink = new zmq.Push()
+  const sinkUri = getQueueUri(config.bindHost, config.routerPort)
   await sink.bind(sinkUri)
 
   logger.info(
@@ -26,14 +27,16 @@ export async function runEnrichmentWorker(config: Config) {
 
   for await (const [msg] of source) {
     const event = JSON.parse(msg.toString()) as Event
+    logger.info(`Enriching Event: ${event.id}`)
+
     const enrichedEvent = enrich(event)
 
-    logger.info('Enriched event', JSON.stringify(enrichedEvent))
     await sink.send(JSON.stringify(enrichedEvent))
   }
 }
 
 function enrich(event: Event): Event {
+  logger.info(`Enriching Event: ${event.id}`)
   let newEvent = structuredClone(event)
   if (!newEvent.labels) {
     newEvent.labels = []
@@ -116,7 +119,7 @@ function postUrlEnricher(newEvent: Event): Event {
   return newEvent
 }
 function detectPostLanguage(newEvent: Event): Event {
-  const langs = newEvent.data.record.langs || ''
+  const langs = newEvent.data.record.langs || []
   newEvent.labels.push({ key: 'detectedLanguages', value: langs.join(',') })
   return newEvent
 }

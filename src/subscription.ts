@@ -38,6 +38,10 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
     let attempts = 0
     const jsonEvent = JSON.stringify(event)
 
+    if (Math.random() < 0.01) {
+      logger.info(`Random Event Sample: ${jsonEvent}`)
+    }
+
     let i = 0
     while (!messageSent) {
       const release = await this.zmqMutex.acquire()
@@ -46,12 +50,12 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
         .then(() => {
           messageSent = true
           this.publishCounter.add(1)
-          if (attempts > 0) console.log('Retried and succeeded')
+          if (attempts > 0) logger.info('Retried and succeeded')
         })
         .catch((err) => {
           attempts++
           this.publishErrorCounter.add(1)
-          console.error('Error sending event to firehose. Retrying...', err)
+          logger.error('Error sending event to firehose. Retrying...', err)
         })
         .finally(() => {
           release()

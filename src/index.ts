@@ -7,12 +7,14 @@ import { fork } from 'node:child_process'
 import { runEnrichmentWorker } from './workers/enrichmentWorker'
 import { runRouterWorker } from './workers/routerWorker'
 import { getLogger } from './util/logging'
+import { getQueueUri } from './util/zeromq'
 
 const logger = getLogger(__filename)
 
 const runServer = async (config: Config) => {
   const sock = new zmq.Push()
-  await sock.bind(config.zmqUri['blueskyFirehose'])
+  const sinkUri = getQueueUri(config.bindHost, config.firehosePort)
+  await sock.bind(sinkUri)
 
   const server = FeedGenerator.create(config, sock)
 
@@ -44,6 +46,9 @@ const runServer = async (config: Config) => {
 
   logger.info(
     `🤖 running feed generator at http://${server.cfg.listenhost}:${server.cfg.port}`,
+  )
+  logger.info(
+    `Bluesky Firehose Source [${process.pid}] ready. Source: Bluesky, Sink: ${sinkUri}`,
   )
 }
 

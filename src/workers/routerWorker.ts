@@ -9,11 +9,12 @@ import hashtagRegex from 'hashtag-regex'
 import { createDb, Database, migrateToLatest } from '../db'
 import { addPostToFeed } from '../feeds/postRepository'
 import { getLogger } from '../util/logging'
+import { getQueueUri } from '../util/zeromq'
 
 const logger = getLogger(__filename)
 
 export async function runRouterWorker(config: Config) {
-  const sourceUri = config.zmqUri['enrichedEvents']
+  const sourceUri = getQueueUri(config.enrichHost, config.routerPort)
   const source = new zmq.Pull()
   source.connect(sourceUri)
 
@@ -33,7 +34,7 @@ export async function runRouterWorker(config: Config) {
 
   const routeHandlers: ((Event) => void)[] = [
     (event: Event) => {
-      logger.info('Routing Event', event)
+      logger.info(`Routing Event: ${event.id}`)
     },
     // webhookRouter.handleEvent.bind(webhookRouter),
     (event: Event) => {

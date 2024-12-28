@@ -6,16 +6,18 @@ import { EventFilter, EventFilterHandler } from '../events/filters/filter'
 import { Config } from '../config'
 import { metrics } from '@opentelemetry/api'
 import { getLogger } from '../util/logging'
+import { getQueueUri } from '../util/zeromq'
 
 const logger = getLogger(__filename)
+
 export async function runFilterWorker(config: Config) {
-  const sourceUri = config.zmqUri['blueskyFirehose']
+  const sourceUri = getQueueUri(config.firehoseHost, config.firehosePort)
   const source = new zmq.Pull()
   source.connect(sourceUri)
 
-  const sinkUri = config.zmqUri['filteredEvents']
+  const sinkUri = getQueueUri(config.enrichHost, config.enrichPort)
   const sink = new zmq.Push()
-  await sink.connect(sinkUri)
+  sink.connect(sinkUri)
 
   const filterStack: (EventFilter | EventFilterHandler)[] = [
     new LanguageFilter(['en', 'en-US', 'en-GB', 'en-CA', 'en-AU']),
@@ -42,13 +44,22 @@ export async function runFilterWorker(config: Config) {
     `FilterWorker[${process.pid}] ready. Source: ${sourceUri}, Sink: ${sinkUri}`,
   )
 
+  let numFiltered = Math.floor(Math.random() * 1000)
   for await (const [msg] of source) {
     const event = JSON.parse(msg.toString()) as Event
+
+    logger.debug(`Processing Loop: ${numFiltered++}`)
+    logger.debug(`Received message from firehose [${numFiltered}]: ${event.id}`)
     receiptCounter.add(1)
 
-    if (applyFilterStack(event)) {
-      logger.debug({ 'Applying Filter Stack to': event })
+    if (!event.id) {
+      logger.error(`Event missing id[${numFiltered}]: ${event}`)
+    }
 
+    logger.trace(`Applying Filter Stack to[${numFiltered}]: ${event.id}`)
+    if (true) {
+      //applyFilterStack(event)) {
+      logger.info(`Event accepted[${numFiltered}]: ${event.id}`)
       await sink
         .send(JSON.stringify(event))
         .then(() => {
@@ -56,8 +67,13 @@ export async function runFilterWorker(config: Config) {
         })
         .catch((err) => {
           publishErrorCounter.add(1)
-          console.error('Error publishing filtered event', err)
+          console.error(
+            `Error publishing filtered event[${numFiltered}]: ${event.id}`,
+            err,
+          )
         })
+    } else {
+      logger.trace(`Event rejected[${numFiltered}]: ${event.id}`)
     }
   }
 }

@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "moduleResolution": "node",
     "alwaysStrict": true,
-    "allowUnreachableCode": false,
+    "allowUnreachableCode": true,
     "strictNullChecks": true,
     "skipLibCheck": true
   },
