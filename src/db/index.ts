@@ -33,7 +33,10 @@ export const createDb = (type: string, connString: string): Database => {
     default:
       throw new Error(`Unsupported database type: ${type}`)
   }
-  const db = new Kysely<DatabaseSchema>({ dialect })
+  const db = new Kysely<DatabaseSchema>({
+    dialect: dialect,
+    log: ['query', 'error'],
+  })
   return db
 }
 
