@@ -12,8 +12,9 @@ export default function (server: Server, ctx: AppContext) {
   server.app.bsky.feed.getFeedSkeleton(async ({ params, req }) => {
     const feedUri = new AtUri(params.feed)
     const algo = algos[feedUri.rkey]
-    logger.info('feedUri.hostname', feedUri.hostname)
-    logger.info('feedUri.collection', feedUri.collection)
+    logger.info(
+      `Generating Feed with feedUri.hostname: ${feedUri.hostname}, feedUri.collection ${feedUri.collection}, algo ${algo}`,
+    )
     logger.info(ctx.cfg)
     if (
       feedUri.hostname !== ctx.cfg.publisherDid ||
