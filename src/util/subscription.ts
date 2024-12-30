@@ -13,6 +13,9 @@ import {
 } from '../lexicon/types/com/atproto/sync/subscribeRepos'
 import { Database } from '../db'
 import { metrics } from '@opentelemetry/api'
+import { getLogger } from './logging'
+
+const logger = getLogger(__filename)
 
 export abstract class FirehoseSubscriptionBase {
   public sub: Subscription<RepoEvent>
@@ -26,6 +29,8 @@ export abstract class FirehoseSubscriptionBase {
     this.approxQueueDepthMeter = queueMeter.createUpDownCounter(
       'zmq.firehose.sink.depth',
     )
+
+    logger.info(`Creating subscription to bluesky firehose at ${service}`)
 
     this.sub = new Subscription({
       service: service,
