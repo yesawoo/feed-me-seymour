@@ -36,7 +36,7 @@ export const createDb = (type: string, connString: string): Database => {
   const db = new Kysely<DatabaseSchema>({
     dialect: dialect,
     // log: ['query', 'error'],
-    log: ['error'],
+    // log: ['error'],
   })
   return db
 }
