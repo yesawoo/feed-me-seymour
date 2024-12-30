@@ -1,8 +1,5 @@
 import * as zmq from 'zeromq'
 import { Event } from '../events'
-import { LanguageFilter } from '../events/filters/language'
-import { LengthFilter } from '../events/filters/length'
-import { EventFilter, EventFilterHandler } from '../events/filters/filter'
 import { Config } from '../config'
 import Sentiment from 'sentiment'
 import hashtagRegex from 'hashtag-regex'

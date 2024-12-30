@@ -1,7 +1,7 @@
 import { Event } from '../../events'
-import { EventFilter } from './filter'
+import { Filter } from './filter'
 
-class LengthFilter implements EventFilter {
+class LengthFilter implements Filter {
   constructor(public minLength: number) {}
 
   isMatch(event: Event): boolean {

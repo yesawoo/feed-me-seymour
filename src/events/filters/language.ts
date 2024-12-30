@@ -1,7 +1,7 @@
 import { Event } from '../../events'
-import { EventFilter } from './filter'
+import { Filter } from './filter'
 
-class LanguageFilter implements EventFilter {
+class LanguageFilter implements Filter {
   constructor(public allowedLanguages: string[]) {}
 
   isMatch(event: Event): boolean {

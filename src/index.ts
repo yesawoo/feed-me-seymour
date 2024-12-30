@@ -1,5 +1,3 @@
-import { metrics } from '@opentelemetry/api'
-import * as zmq from 'zeromq'
 import FeedGenerator from './workers/server'
 import { Config, getConfig } from './config'
 import { runFilterWorker } from './workers/filterWorker'
@@ -7,8 +5,6 @@ import { fork } from 'node:child_process'
 import { runEnrichmentWorker } from './workers/enrichmentWorker'
 import { runRouterWorker } from './workers/routerWorker'
 import { getLogger } from './util/logging'
-import { getQueueUri } from './util/zeromq'
-import { connect } from 'node:http2'
 
 const logger = getLogger(__filename)
 
@@ -16,11 +12,7 @@ const runServer = async (
   config: Config,
   connectToFirehose: boolean = false,
 ) => {
-  const sock = new zmq.Push()
-  const sinkUri = getQueueUri(config.bindHost, config.firehosePort)
-  await sock.bind(sinkUri)
-
-  const server = FeedGenerator.create(config, sock)
+  const server = await FeedGenerator.create(config, connectToFirehose)
 
   server.app.get('/', (req, res) => {
     res.send('<p>Feed Me, Seymour!</p>')
@@ -47,16 +39,6 @@ const runServer = async (
   })
 
   await server.start(connectToFirehose)
-
-  if (connectToFirehose) {
-    logger.info(
-      `Bluesky Firehose Source [${process.pid}] ready. Source: Bluesky, Sink: ${sinkUri}`,
-    )
-  } else {
-    logger.info(
-      `🤖 running feed generator at http://${server.cfg.listenhost}:${server.cfg.port}`,
-    )
-  }
 }
 
 const borkfork = async (workerName: string) => {
@@ -96,7 +78,7 @@ async function spawnWorkers(config: Config) {
 
   const spawnServer = async () => {
     console.log('Spawning server worker')
-    const child = borkfork('server')
+    const child = borkfork('webserver')
   }
 
   spawnFilterWorkers()
@@ -107,6 +89,8 @@ async function spawnWorkers(config: Config) {
 }
 
 const main = async () => {
+  logger.info(`Process starting with command line: ${process.argv.join(' ')}`)
+
   const config = getConfig()
   switch (process.argv[2]) {
     case 'filter':
@@ -124,12 +108,14 @@ const main = async () => {
     case 'webserver':
       runServer(config, false)
       break
-    default:
-      if (process.env.ENVIRONMENT === 'development') {
-        spawnWorkers(config)
-      } else {
-        throw new Error('Unknown worker type')
+    case 'fork-it-up':
+      if (config.environment != 'development') {
+        throw new Error('Forking is only allowed in development')
       }
+      spawnWorkers(config)
+      break
+    default:
+      throw new Error('Unknown worker type: ' + process.argv[2])
       break
   }
 }

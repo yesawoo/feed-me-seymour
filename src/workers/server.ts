@@ -2,7 +2,6 @@ import { DidResolver, MemoryCache } from '@atproto/identity'
 import events from 'events'
 import express from 'express'
 import http from 'http'
-import morgan from 'morgan'
 import * as zmq from 'zeromq'
 import { AppContext, Config } from '../config'
 import { createDb, Database, migrateToLatest } from '../db'
@@ -13,6 +12,7 @@ import { FirehoseSubscription } from '../subscription'
 import wellKnown from '../well-known'
 import { getLogger } from '../util/logging'
 import { logRequest } from '../web/log'
+import { getQueueUri } from '../util/zeromq'
 
 const logger = getLogger(__filename)
 
@@ -22,23 +22,33 @@ export class FeedGenerator {
   public db: Database
   public firehose: FirehoseSubscription
   public cfg: Config
+  private sinkUri: string
 
   constructor(
     app: express.Application,
     db: Database,
     firehose: FirehoseSubscription,
     cfg: Config,
+    sinkUri: string,
   ) {
     this.app = app
     this.db = db
     this.firehose = firehose
     this.cfg = cfg
+    this.sinkUri = sinkUri
   }
 
-  static create(cfg: Config, sock: zmq.Push) {
+  static async create(cfg: Config, connectToFirehose: boolean) {
     const app = express()
     app.use(logRequest)
     const db = createDb(cfg.dbType, cfg.dbConnectionString)
+
+    const sock = new zmq.Push()
+    const sinkUri = getQueueUri(
+      cfg.bindHost,
+      connectToFirehose ? cfg.firehosePort : 29384, // More janky hacks cuz this class does too much.
+    )
+    await sock.bind(sinkUri)
     const firehose = new FirehoseSubscription(
       db,
       cfg.subscriptionEndpoint,
@@ -69,7 +79,7 @@ export class FeedGenerator {
     app.use(server.xrpc.router)
     app.use(wellKnown(ctx))
 
-    return new FeedGenerator(app, db, firehose, cfg)
+    return new FeedGenerator(app, db, firehose, cfg, sinkUri)
   }
 
   async start(connectToFirehose: boolean = true): Promise<http.Server> {
@@ -77,9 +87,16 @@ export class FeedGenerator {
     if (connectToFirehose) {
       this.firehose.run(this.cfg.subscriptionReconnectDelay)
       this.server = this.app.listen(8080, '127.0.0.1') // janky hack to disable server on the firehose component.
+      await events.once(this.server, 'listening')
+      logger.info(
+        `Bluesky Firehose Source [${process.pid}] ready. Source: Bluesky, Sink: ${this.sinkUri}`,
+      )
     } else {
       this.server = this.app.listen(this.cfg.port, this.cfg.listenhost)
       await events.once(this.server, 'listening')
+      logger.info(
+        `Feed Generator Webserver [${process.pid}] ready. Listening at http://${this.cfg.listenhost}:${this.cfg.port}`,
+      )
     }
     return this.server
   }

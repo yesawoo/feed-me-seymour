@@ -2,7 +2,7 @@ import * as zmq from 'zeromq'
 import { Event } from '../events'
 import { LanguageFilter } from '../events/filters/language'
 import { LengthFilter } from '../events/filters/length'
-import { EventFilter, EventFilterHandler } from '../events/filters/filter'
+import { Filter, FilterMatcher } from '../events/filters/filter'
 import { Config } from '../config'
 import { metrics } from '@opentelemetry/api'
 import { getLogger } from '../util/logging'
@@ -19,7 +19,7 @@ export async function runFilterWorker(config: Config) {
   const sink = new zmq.Push()
   sink.connect(sinkUri)
 
-  const filterStack: (EventFilter | EventFilterHandler)[] = [
+  const filterStack: (Filter | FilterMatcher)[] = [
     new LanguageFilter(['en', 'en-US', 'en-GB', 'en-CA', 'en-AU']),
     new LengthFilter(10),
     (event: Event) => event.data.record.text.includes('furry'),
