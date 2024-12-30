@@ -35,6 +35,14 @@ export async function runFilterWorker(config: Config) {
     })
   }
 
+  const fakeGauge = {
+    record: (value: number) => {
+      if (value % 1000 === 0) {
+        logger.info(`[FAKEGAUGE] Events Filtered: ${value}`)
+      }
+    },
+  }
+
   const meter = metrics.getMeter('feed-me-seymour.filter')
   const publishCounter = meter.createCounter('events.sent.counter')
   const publishErrorCounter = meter.createCounter('events.error.counter')
@@ -44,7 +52,7 @@ export async function runFilterWorker(config: Config) {
     `FilterWorker[${process.pid}] ready. Source: ${sourceUri}, Sink: ${sinkUri}`,
   )
 
-  let numFiltered = Math.floor(Math.random() * 1000)
+  let numFiltered = 0
   for await (const [msg] of source) {
     const event = JSON.parse(msg.toString()) as Event
 
@@ -74,5 +82,6 @@ export async function runFilterWorker(config: Config) {
     } else {
       logger.trace(`Event rejected[${numFiltered}]: ${event.id}`)
     }
+    fakeGauge.record(numFiltered)
   }
 }

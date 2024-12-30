@@ -18,7 +18,7 @@ export const routeFurryTrashToBlueskyFeed: RoutingRule = {
     )
   },
   sink: {
-    name: 'BlueskyFeed',
+    name: 'BlueskyFeed[Furry]',
     push: (event: Event) => {
       logger.info('Furry Trash Detected! Adding it to the feed.')
       addPostToFeed(db, event)
