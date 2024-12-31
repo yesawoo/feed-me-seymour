@@ -18,6 +18,6 @@ export const rootLogger = logger
 export function getLogger(name: string) {
   return logger.child({
     filename: name,
-    component: globalThis.context?.workerType || 'unspecified',
+    component: process.env.WORKER_TYPE || 'unspecified',
   })
 }
