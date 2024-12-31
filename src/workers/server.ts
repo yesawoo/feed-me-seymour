@@ -107,24 +107,25 @@ export class FeedGenerator {
 
 async function testDbConnection(db: Database, dbType: string) {
   if (dbType === 'sqlite') {
-    logger.info("Running SQLite - Not Testing DB Connection")
+    logger.info('Running SQLite - Not Testing DB Connection')
     return
 
-  try {
-    let result = await db.executeQuery(
-      CompiledQuery.raw(
-        `
+    try {
+      let result = await db.executeQuery(
+        CompiledQuery.raw(
+          `
         SELECT 
           1+1 AS one_plus_one,
           current_database as current_database
         `,
-      ),
-    )
-    logger.info('Database connection successful with result:', result)
-  } catch (error) {
-    logger.error(`Database connection failed: ${JSON.stringify(error)}`)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    throw new Error(`Database connection failed`, error)
+        ),
+      )
+      logger.info('Database connection successful with result:', result)
+    } catch (error) {
+      logger.error(`Database connection failed: ${JSON.stringify(error)}`)
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      throw new Error(`Database connection failed`, error)
+    }
   }
 }
 
