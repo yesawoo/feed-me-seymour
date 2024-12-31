@@ -13,6 +13,7 @@ import wellKnown from '../well-known'
 import { getLogger } from '../util/logging'
 import { logRequest } from '../web/log'
 import { getQueueUri } from '../util/zeromq'
+import { CompiledQuery } from 'kysely'
 
 const logger = getLogger(__filename)
 
@@ -54,6 +55,8 @@ export class FeedGenerator {
       cfg.subscriptionEndpoint,
       sock,
     )
+
+    testDbConnection(db, cfg.dbType)
 
     const didCache = new MemoryCache()
     const didResolver = new DidResolver({
@@ -99,6 +102,29 @@ export class FeedGenerator {
       )
     }
     return this.server
+  }
+}
+
+async function testDbConnection(db: Database, dbType: string) {
+  if (dbType === 'sqlite') {
+    logger.info("Running SQLite - Not Testing DB Connection")
+    return
+
+  try {
+    let result = await db.executeQuery(
+      CompiledQuery.raw(
+        `
+        SELECT 
+          1+1 AS one_plus_one,
+          current_database as current_database
+        `,
+      ),
+    )
+    logger.info('Database connection successful with result:', result)
+  } catch (error) {
+    logger.error(`Database connection failed: ${JSON.stringify(error)}`)
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    throw new Error(`Database connection failed`, error)
   }
 }
 
