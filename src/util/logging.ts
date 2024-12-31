@@ -16,19 +16,8 @@ export const logger = pino(
 export const rootLogger = logger
 
 export function getLogger(name: string) {
-  return logger.child({ filename: name })
+  return logger.child({
+    filename: name,
+    workerType: globalThis.context?.workerType || 'unspecified',
+  })
 }
-
-function disableConsoleLogging() {
-  const die = () => {
-    throw new Error('console.log called')
-  }
-  var DEBUG = false
-  if (!DEBUG) {
-    var methods = ['log', 'debug', 'warn', 'info']
-    for (var i = 0; i < methods.length; i++) {
-      console[methods[i]] = die
-    }
-  }
-}
-// disableConsoleLogging()

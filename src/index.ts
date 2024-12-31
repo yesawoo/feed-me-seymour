@@ -7,6 +7,7 @@ import { runRouterWorker } from './workers/routerWorker'
 import { getLogger } from './util/logging'
 
 const logger = getLogger(__filename)
+globalThis.context = {} as { workerType: string }
 
 const runServer = async (
   config: Config,
@@ -91,8 +92,11 @@ async function spawnWorkers(config: Config) {
 const main = async () => {
   logger.info(`Process starting with command line: ${process.argv.join(' ')}`)
 
+  const workerType = process.argv[2]
+  globalThis.context.workerType = workerType
+
   const config = getConfig()
-  switch (process.argv[2]) {
+  switch (workerType) {
     case 'filter':
       runFilterWorker(config)
       break
