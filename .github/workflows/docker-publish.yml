@@ -27,6 +27,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Get short SHA of commit
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Show short SHA
+        run: echo SHA ${{ steps.vars.outputs.sha_short }}
+
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
       - name: Install cosign
@@ -70,6 +77,7 @@ jobs:
           tags: |
             ${{ steps.meta.outputs.tags }}
             latest
+            ${{ steps.vars.outputs.sha_short }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
