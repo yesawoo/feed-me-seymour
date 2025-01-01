@@ -13,6 +13,8 @@ RUN apt-get update \
 	vim-tiny \
 	&& rm -rf /var/cache/apt/archives /var/lib/apt/lists
 
+RUN yarn
+
 COPY . .
 
 EXPOSE 3000
