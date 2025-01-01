@@ -82,6 +82,11 @@ export async function runFilterWorker(config: Config) {
     } else {
       logger.trace(`Event rejected[${numFiltered}]: ${event.id}`)
     }
+
+    if (numFiltered == 10) {
+      logger.info('FilterWorker is receiving messages (N=10).')
+    }
+
     fakeGauge.record(numFiltered)
   }
 }
