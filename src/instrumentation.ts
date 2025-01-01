@@ -4,7 +4,7 @@ import { NodeSDK } from '@opentelemetry/sdk-node'
 import { ConsoleSpanExporter } from '@opentelemetry/sdk-trace-node'
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
-import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto'
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc'
 import {
   PeriodicExportingMetricReader,
   ConsoleMetricExporter,
