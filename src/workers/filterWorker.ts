@@ -51,6 +51,7 @@ export async function runFilterWorker(config: Config) {
   logger.info(
     `FilterWorker[${process.pid}] ready. Source: ${sourceUri}, Sink: ${sinkUri}`,
   )
+  logger.info('FilterWorker waiting for messages...')
 
   let numFiltered = 0
   for await (const [msg] of source) {
