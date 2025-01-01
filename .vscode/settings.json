@@ -1,6 +1,9 @@
 {
   "github-actions.workflows.pinned.workflows": [
-    ".github/workflows/docker-image.yml"
+    ".github/workflows/docker-image.yml",
+    ".github/workflows/docker-publish.yml"
   ],
-  "logViewer.watch": ["*.log"]
+  "logViewer.watch": [
+    "*.log"
+  ]
 }

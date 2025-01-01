@@ -3,7 +3,15 @@ FROM node:23-bookworm-slim
 
 COPY package*.json ./
 
-RUN yarn
+RUN apt-get update \
+	&& apt-get install -y \
+	git \
+	curl \
+	zip \
+	unzip \
+	tar \
+	vim-tiny \
+	&& rm -rf /var/cache/apt/archives /var/lib/apt/lists
 
 COPY . .
 
