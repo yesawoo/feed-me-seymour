@@ -13,9 +13,10 @@ migrateToLatest(db)
 
 export const routeFurryTrashToBlueskyFeed: RoutingRule = {
   filter: (event: Event) => {
-    return event.labels.some(
-      (label) => label.key === 'isFurryTrash' && label.value === true,
-    )
+    return true
+    // return event.labels.some(
+    //   (label) => label.key === 'isFurryTrash' && label.value === true,
+    // )
   },
   sink: {
     name: 'BlueskyFeed[Furry]',
