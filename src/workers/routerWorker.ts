@@ -13,7 +13,10 @@ export const logger = getLogger(__filename)
 
 export async function runRouterWorker(config: Config) {
   const sourceUri = getQueueUri(config.enrichHost, config.routerPort)
-  const source = new zmq.Pull()
+  const source = new zmq.Pull({ connectTimeout: 2000 })
+  source.events.on('connect:retry', (event) => {
+    logger.warn(`Retrying Connection: ${event.type}`)
+  })
   source.connect(sourceUri)
 
   const sinkUri = 'N/A'
