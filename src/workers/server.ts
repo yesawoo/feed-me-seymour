@@ -44,10 +44,13 @@ export class FeedGenerator {
     app.use(logRequest)
     const db = createDb(cfg.dbType, cfg.dbConnectionString)
 
-    const sock = new zmq.Push()
+    const sock = new zmq.Push({ connectTimeout: 2000 })
+    sock.events.on('connect:retry', (event) => {
+      logger.warn(`Retrying Connection: ${event.type}`)
+    })
     const sinkUri = getQueueUri(
       cfg.bindHost,
-      connectToFirehose ? cfg.firehosePort : 29384, // More janky hacks cuz this class does too much.
+      cfg.firehosePort, // More janky hacks cuz this class does too much.
     )
     await sock.bind(sinkUri)
     const firehose = new FirehoseSubscription(

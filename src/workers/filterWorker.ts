@@ -12,7 +12,10 @@ const logger = getLogger(__filename)
 
 export async function runFilterWorker(config: Config) {
   const sourceUri = getQueueUri(config.firehoseHost, config.firehosePort)
-  const source = new zmq.Pull()
+  const source = new zmq.Pull({ connectTimeout: 2000 })
+  source.events.on('connect:retry', (event) => {
+    logger.warn(`Retrying Connection: ${event.type}`)
+  })
   source.connect(sourceUri)
 
   const sinkUri = getQueueUri(config.enrichHost, config.enrichPort)
