@@ -1,11 +1,8 @@
 import * as zmq from 'zeromq'
 import { Event } from '../events'
 import { Config } from '../config'
-import { createDb, Database, migrateToLatest } from '../db'
-import { addPostToFeed } from '../feeds/postRepository'
 import { getLogger } from '../util/logging'
 import { getQueueUri } from '../util/zeromq'
-import { WebhookPusher } from '../events/routers/handlers/WebhookPusher'
 import { routeFurryTrashToBlueskyFeed } from '../events/routers/handlers/BlueskyFeed'
 import EventRouter from '../events/routers/Router'
 
