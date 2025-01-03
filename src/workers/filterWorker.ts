@@ -8,6 +8,8 @@ import { metrics } from '@opentelemetry/api'
 import { getLogger } from '../util/logging'
 import { getQueueUri } from '../util/zeromq'
 
+import { requestCounter } from './fuck'
+
 const logger = getLogger(__filename)
 
 export async function runFilterWorker(config: Config) {
@@ -63,6 +65,7 @@ export async function runFilterWorker(config: Config) {
     logger.debug(`Processing Loop: ${numFiltered++}`)
     logger.debug(`Received message from firehose [${numFiltered}]: ${event.id}`)
     receiptCounter.add(1)
+    requestCounter.add(1)
 
     if (!event.id) {
       logger.error(`Event missing id[${numFiltered}]: ${event}`)
