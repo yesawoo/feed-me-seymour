@@ -1,6 +1,8 @@
 # DONT TRY TO BUILD AN ARM64 VERSION OF THIS. IT WILL FAIL.
 FROM node:23-bookworm-slim
 
+WORKDIR /app
+
 COPY package*.json ./
 
 RUN apt-get update \
