@@ -8,7 +8,7 @@ import { metrics } from '@opentelemetry/api'
 import { getLogger } from '../util/logging'
 import { getQueueUri } from '../util/zeromq'
 
-import { requestCounter } from './fuck'
+import { requestCounter } from '../fuck'
 
 const logger = getLogger(__filename)
 
