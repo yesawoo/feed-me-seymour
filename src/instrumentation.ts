@@ -31,7 +31,10 @@ const config = (() => {
   }
 })()
 
-console.log('Initializing Opentelemetry Instrumentation...')
+console.log(
+  `Initializing Opentelemetry Instrumentation: ` +
+    JSON.stringify(config, null, 2),
+)
 
 if (config.environment === 'development') {
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG)
