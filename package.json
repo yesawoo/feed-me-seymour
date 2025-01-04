@@ -12,7 +12,7 @@
     "publishFeed": "ts-node scripts/publishFeedGen.ts",
     "unpublishFeed": "ts-node scripts/unpublishFeedGen.ts",
     "start": "ts-node --require ./src/instrumentation.ts ./src/index.ts",
-    "start-prod": "tsc && node --require dist/src/instrumentation.js dist/src/index.js",
+    "start-prod": "tsc && node --require ./dist/instrumentation.js ./dist/index.js",
     "build": "tsc"
   },
   "dependencies": {

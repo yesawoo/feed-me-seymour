@@ -58,7 +58,7 @@ const sdk = new NodeSDK({
 
 sdk.start()
 
-import { testMetrics } from '../scripts/testInstrumentation'
-if (require.main === module) {
-  testMetrics()
-}
+// import { testMetrics } from '../scripts/testInstrumentation'
+// if (config.environment === 'development' && require.main === module) {
+//   testMetrics()
+// }
